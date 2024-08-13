@@ -24,28 +24,31 @@
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
           <CarouselContent class="w-[300px]">
             <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 h-[250px] text-center">
-              <Card class="h-[250px]">
+              <Card class="flex h-[250px] flex-col justify-between">
                 <CardHeader>
                   <CardTitle>{{ getBetTypeLabel(bet.betType) }}</CardTitle>
                   <CardDescription>Week {{ bet.week }}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent class="flex-grow">
                   <div v-for="(team, index) in bet.team" :key="index">
                     <p>
                       {{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }} {{ bet.odds }}
                     </p>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  {{ bet.result }}
+                <CardFooter class="mx-auto mt-auto">
                   {{
-                    bet.result === 'win'
-                      ? '+' + bet.betPayout
-                      : bet.result === 'push'
-                        ? '+0'
-                        : '-' + bet.betAmount
-                  }}</CardFooter
-                >
+                    bet.result === 'pending'
+                      ? `Risk: $${bet.betAmount} Payout: $${bet.betPayout}`
+                      : `Status: ${bet.result} ${
+                          bet.result === 'win'
+                            ? '+$' + bet.betPayout
+                            : bet.result === 'push'
+                              ? '+$0'
+                              : '-$' + bet.betAmount
+                        }`
+                  }}
+                </CardFooter>
               </Card>
             </CarouselItem>
           </CarouselContent>
@@ -380,7 +383,7 @@ export default {
 
       // Initialize data structure for each week
       const weeklyWinnings = weeks.map((week) => ({
-        week,
+        week: `Week ${week}`, // Add "Week " prefix to the week number
         'Total Winnings': 0
       }))
 
