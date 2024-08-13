@@ -26,12 +26,15 @@
             <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 h-[250px] text-center">
               <Card class="h-[250px]">
                 <CardHeader>
-                  <CardTitle>{{ bet.betType }}</CardTitle>
-                  <CardDescription>week: {{ bet.week }}</CardDescription>
+                  <CardTitle>{{ getBetTypeLabel(bet.betType) }}</CardTitle>
+                  <CardDescription>Week {{ bet.week }}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
-                  <p>{{ bet.betAmound }} {{ bet.odds }}</p>
+                  <div v-for="(team, index) in bet.team" :key="index">
+                    <p>
+                      {{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }} {{ bet.odds }}
+                    </p>
+                  </div>
                 </CardContent>
                 <CardFooter>
                   {{ bet.result }}
@@ -90,6 +93,15 @@ export default {
   data() {
     return {
       allBets: [],
+      betTypeLabels: {
+        spread: 'Spread',
+        moneyline: 'Moneyline',
+        'over-under': 'Over/Under',
+        future: 'Future',
+        parlay: 'Parlay',
+        '2-team-teaser': '2 Team Teaser',
+        '3-team-teaser': '3 Team Teaser'
+      },
       record: '',
       amountWon: 0,
       amountLost: 0,
@@ -359,6 +371,9 @@ export default {
     }
   },
   methods: {
+    getBetTypeLabel(betType) {
+      return this.betTypeLabels[betType] || betType
+    },
     prepareChartData() {
       const weeks = Array.from({ length: 22 }, (_, i) => i + 1) // [1, 2, ..., 22]
       let cumulativeWinnings = 0
