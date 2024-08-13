@@ -12,10 +12,17 @@
   },
   "dependencies": {
     "axios": "^1.3.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.427.0",
+    "radix-vue": "^1.9.4",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.4.29"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
+    "@types/node": "^22.2.0",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/eslint-config-prettier": "^9.0.0",
     "autoprefixer": "^10.4.20",

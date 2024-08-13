@@ -2,24 +2,7 @@
   <main>
     <h1 class="text-center text-2xl">Playbook</h1>
     <div v-for="bet in allBets" :key="bet.id">
-      <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Title</label>
-          <p class="text-gray-700 text-base">{{ bet.sport }}</p>
-        </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Description</label>
-          <p class="text-gray-700 text-base">{{ bet.description }}</p>
-        </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Odds</label>
-          <p class="text-gray-700 text-base">{{ bet.odds }}</p>
-        </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
-          <p class="text-gray-700 text-base">{{ bet.status }}</p>
-        </div>
-      </div>
+      <div class="text-center">{{ bet._id }}</div>
     </div>
   </main>
 </template>
