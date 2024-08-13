@@ -1,14 +1,14 @@
 <template>
-  <main>
-    <h1 class="py-4 text-center text-6xl">Playbook</h1>
-    <section class="py-4 text-center">
+  <main class="bg-black">
+    <h1 class="font-matemasie py-4 text-center text-6xl text-white">Playbook</h1>
+    <section class="py-4 text-center text-white">
       <p>Sport: NFL</p>
       <p>Season: 2023</p>
       <p>Record: {{ record }}</p>
       <p>Winnings: ${{ amountTotal }}</p>
     </section>
     <section class="flex justify-center py-4">
-      <Carousel class="w-full max-w-sm" :opts="{ align: 'start' }">
+      <Carousel class="w-full max-w-sm" :opts="{ align: 'start', loop: 'true' }">
         <CarouselContent class="mx-1">
           <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
             <Card>
