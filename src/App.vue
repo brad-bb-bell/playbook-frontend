@@ -414,7 +414,6 @@ export default {
         .get('https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/')
         .then((response) => {
           this.allBets = response.data.bets
-          console.log(this.allBets)
           this.calculateStats()
           this.prepareChartData()
         })
