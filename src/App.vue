@@ -4,19 +4,28 @@
     <section class="flex justify-center">
       <Carousel class="w-full max-w-sm" :opts="{ align: 'start' }">
         <CarouselContent class="mx-1">
-          <Card v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
-            <CardHeader>
-              <CardTitle>{{ bet.betType }}</CardTitle>
-              <CardDescription>{{ bet._id }}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
-              <p>{{ bet.betAmound }} {{ bet.odds }}</p>
-            </CardContent>
-            <CardFooter>
-              {{ bet.result }}
-            </CardFooter>
-          </Card>
+          <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
+            <Card>
+              <CardHeader>
+                <CardTitle>{{ bet.betType }}</CardTitle>
+                <CardDescription>week: {{ bet.week }}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
+                <p>{{ bet.betAmound }} {{ bet.odds }}</p>
+              </CardContent>
+              <CardFooter>
+                {{ bet.result }}
+                {{
+                  bet.result === 'win'
+                    ? '+' + bet.betPayout
+                    : bet.result === 'push'
+                      ? '+0'
+                      : '-' + bet.betAmount
+                }}</CardFooter
+              >
+            </Card>
+          </CarouselItem>
         </CarouselContent>
         <CarouselPrevious />
         <CarouselNext />
@@ -89,6 +98,7 @@ export default {
   },
   mounted() {
     this.getAllBets()
+    console.log(Date.now())
   }
 }
 </script>
