@@ -1,15 +1,43 @@
 <template>
   <main>
     <h1 class="text-center text-2xl">Playbook</h1>
-    <div v-for="bet in allBets" :key="bet.id">
-      <div class="text-center">{{ bet._id }}</div>
+    <div v-for="bet in allBets" :key="bet._id">
+      <Card class="w-[300px]">
+        <CardHeader>
+          <CardTitle>{{ bet.betType }}</CardTitle>
+          <CardDescription>{{ bet._id }}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
+          <p>{{ bet.betAmound }} {{ bet.odds }}</p>
+        </CardContent>
+        <CardFooter>
+          {{ bet.result }}
+        </CardFooter>
+      </Card>
     </div>
   </main>
 </template>
 <script>
 import axios from 'axios'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 
 export default {
+  components: {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle
+  },
   data() {
     return {
       allBets: []
