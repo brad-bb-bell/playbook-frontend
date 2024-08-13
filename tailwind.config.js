@@ -23,7 +23,8 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        matemasie: ['Matemasie', 'sans-serif']
+        matemasie: ['Matemasie', 'sans-serif'],
+        'anek-devanagari': ['Anek Devanagari', 'sans-serif']
       },
       colors: {
         border: 'hsl(var(--border))',

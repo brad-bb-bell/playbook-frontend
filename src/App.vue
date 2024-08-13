@@ -1,41 +1,46 @@
 <template>
   <main class="bg-black">
     <h1 class="font-matemasie py-4 text-center text-6xl text-white">Playbook</h1>
-    <section class="py-4 text-center text-white">
+    <section class="font-anek-devanagari py-4 text-center text-xl text-white">
       <p>Sport: NFL</p>
       <p>Season: 2023</p>
       <p>Record: {{ record }}</p>
       <p>Winnings: ${{ amountTotal }}</p>
     </section>
-    <section class="flex justify-center py-4">
-      <Carousel class="w-full max-w-sm" :opts="{ align: 'start', loop: 'true' }">
-        <CarouselContent class="mx-1">
-          <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
-            <Card>
-              <CardHeader>
-                <CardTitle>{{ bet.betType }}</CardTitle>
-                <CardDescription>week: {{ bet.week }}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
-                <p>{{ bet.betAmound }} {{ bet.odds }}</p>
-              </CardContent>
-              <CardFooter>
-                {{ bet.result }}
-                {{
-                  bet.result === 'win'
-                    ? '+' + bet.betPayout
-                    : bet.result === 'push'
-                      ? '+0'
-                      : '-' + bet.betAmount
-                }}</CardFooter
-              >
-            </Card>
-          </CarouselItem>
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+    <section class="py-4">
+      <h2 class="font-anek-devanagari justify-center text-center text-xl text-white underline">
+        Bets
+      </h2>
+      <div class="flex justify-center">
+        <Carousel class="w-full max-w-sm" :opts="{ align: 'start', loop: 'true' }">
+          <CarouselContent class="mx-1">
+            <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{{ bet.betType }}</CardTitle>
+                  <CardDescription>week: {{ bet.week }}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>{{ bet.team[0] }} {{ bet.line[0] }} {{ bet.opponent[0] }}</p>
+                  <p>{{ bet.betAmound }} {{ bet.odds }}</p>
+                </CardContent>
+                <CardFooter>
+                  {{ bet.result }}
+                  {{
+                    bet.result === 'win'
+                      ? '+' + bet.betPayout
+                      : bet.result === 'push'
+                        ? '+0'
+                        : '-' + bet.betAmount
+                  }}</CardFooter
+                >
+              </Card>
+            </CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
     </section>
   </main>
 </template>
