@@ -12,7 +12,6 @@ module.exports = {
     './app/**/*.{js,jsx,vue}',
     './src/**/*.{js,jsx,vue}'
   ],
-
   theme: {
     container: {
       center: true,
