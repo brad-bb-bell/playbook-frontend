@@ -1,7 +1,13 @@
 <template>
   <main>
-    <h1 class="py-4 text-center text-6xl text-white">Playbook</h1>
-    <section class="flex justify-center">
+    <h1 class="py-4 text-center text-6xl">Playbook</h1>
+    <section class="py-4 text-center">
+      <p>Sport: NFL</p>
+      <p>Season: 2023</p>
+      <p>Record: {{ record }}</p>
+      <p>Winnings: ${{ amountTotal }}</p>
+    </section>
+    <section class="flex justify-center py-4">
       <Carousel class="w-full max-w-sm" :opts="{ align: 'start' }">
         <CarouselContent class="mx-1">
           <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 w-[300px] text-center">
@@ -67,14 +73,46 @@ export default {
   },
   data() {
     return {
-      allBets: []
+      allBets: [],
+      record: '',
+      amountWon: 0,
+      amountLost: 0,
+      amountTotal: 0
     }
   },
   methods: {
-    getAllBets() {
-      axios.get('https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/').then((response) => {
-        this.allBets = response.data.bets
+    calculateStats() {
+      const wins = this.allBets.filter((bet) => bet.result === 'win').length
+      this.amountWon = 0
+      this.allBets.forEach((bet) => {
+        if (bet.result === 'win') {
+          this.amountWon += bet.betPayout
+        }
       })
+      const losses = this.allBets.filter((bet) => bet.result === 'loss').length
+      this.amountLost = 0
+      this.allBets.forEach((bet) => {
+        if (bet.result === 'loss') {
+          this.amountLost += bet.betAmount
+        }
+      })
+      this.amountTotal = this.amountWon - this.amountLost
+      const pushes = this.allBets.filter((bet) => bet.result === 'push').length
+      this.record = `${wins}-${losses}-${pushes}`
+
+      return {
+        wins,
+        losses,
+        pushes
+      }
+    },
+    async getAllBets() {
+      await axios
+        .get('https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/')
+        .then((response) => {
+          this.allBets = response.data.bets
+          this.calculateStats()
+        })
     },
     login() {
       axios
@@ -98,7 +136,6 @@ export default {
   },
   mounted() {
     this.getAllBets()
-    console.log(Date.now())
   }
 }
 </script>
