@@ -12,7 +12,10 @@
           index="week"
           :categories="['Total Winnings']"
           :y-formatter="(tick, i) => (typeof tick === 'number' ? `$ ${tick}` : '')"
+          :showLegend="false"
+          :showGridLine="false"
         />
+        <!-- :customTooltip="CustomChartTooltip" -->
       </div>
     </section>
 
@@ -58,9 +61,11 @@
       </div>
     </section>
   </main>
+  <!-- <CustomChartTooltip :data="chartData" /> -->
 </template>
 <script>
 import axios from 'axios'
+import CustomChartTooltip from '@/components/ui/chart/CustomChartTooltip.vue'
 import { LineChart } from '@/components/ui/chart-line'
 import {
   Card,
@@ -91,7 +96,8 @@ export default {
     CarouselItem,
     CarouselNext,
     CarouselPrevious,
-    LineChart
+    LineChart,
+    CustomChartTooltip
   },
   data() {
     return {
