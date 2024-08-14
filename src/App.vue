@@ -1,7 +1,7 @@
 <template>
   <main class="bg-black">
-    <h1 class="font-matemasie py-4 text-center text-6xl text-white">Playbook</h1>
-    <section class="font-anek-devanagari py-4 text-center text-xl text-white">
+    <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
+    <section class="py-4 text-center font-anek-devanagari text-xl text-white">
       <p>Sport: NFL</p>
       <p>Season: 2023</p>
       <p>Record: {{ record }}</p>
@@ -17,7 +17,7 @@
     </section>
 
     <section class="py-4">
-      <h2 class="font-anek-devanagari justify-center text-center text-xl text-white underline">
+      <h2 class="justify-center text-center font-anek-devanagari text-xl text-white underline">
         Bets
       </h2>
       <div class="mx-auto flex w-4/5">
