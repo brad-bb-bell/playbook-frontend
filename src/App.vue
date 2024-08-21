@@ -6,18 +6,10 @@
       <p>Season: 2023</p>
       <p>Record: {{ record }}</p>
       <p>Winnings: ${{ amountTotal }}</p>
-      <div class="mx-auto flex w-4/5">
-        <LineChart
-          :data="chartData"
-          index="week"
-          :categories="['Total Winnings']"
-          :y-formatter="(tick, i) => (typeof tick === 'number' ? `$ ${tick}` : '')"
-          :showLegend="false"
-          :showGridLine="false"
-        />
-        <!-- :customTooltip="CustomChartTooltip" -->
-      </div>
+      <div class="mx-auto flex w-4/5"></div>
     </section>
+
+    <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
 
     <section class="py-4">
       <h2 class="justify-center text-center font-anek-devanagari text-xl text-white underline">
@@ -65,8 +57,7 @@
 </template>
 <script>
 import axios from 'axios'
-import CustomChartTooltip from '@/components/ui/chart/CustomChartTooltip.vue'
-import { LineChart } from '@/components/ui/chart-line'
+
 import {
   Card,
   CardContent,
@@ -95,9 +86,7 @@ export default {
     CarouselContent,
     CarouselItem,
     CarouselNext,
-    CarouselPrevious,
-    LineChart,
-    CustomChartTooltip
+    CarouselPrevious
   },
   data() {
     return {
@@ -115,7 +104,54 @@ export default {
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
-      chartData: []
+      chartData: [],
+      chartOptions: {
+        chart: {
+          type: 'line',
+          height: 350,
+          background: '#000000'
+        },
+        title: {
+          text: 'Total Winnings Over Time',
+          align: 'left',
+          style: {
+            color: '#FFFFFF'
+          }
+        },
+        xaxis: {
+          categories: Array.from({ length: 22 }, (_, i) => `Week ${i + 1}`),
+          labels: {
+            style: {
+              colors: '#FFFFFF'
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            style: {
+              colors: '#FFFFFF'
+            }
+          }
+        },
+        stroke: {
+          curve: 'smooth'
+        },
+        grid: {
+          borderColor: '#333333'
+        },
+        dataLabels: {
+          enabled: false
+        },
+        tooltip: {
+          theme: 'dark'
+        }
+      },
+      chartSeries: [
+        {
+          name: 'Total Winnings',
+          data: []
+        }
+      ]
     }
   },
   methods: {
@@ -123,29 +159,24 @@ export default {
       return this.betTypeLabels[betType] || betType
     },
     prepareChartData() {
-      const weeks = Array.from({ length: 22 }, (_, i) => i + 1) // [1, 2, ..., 22]
+      const weeks = Array.from({ length: 22 }, (_, i) => i + 1)
       let cumulativeWinnings = 0
 
-      // Initialize data structure for each week
-      const weeklyWinnings = weeks.map((week) => ({
-        week: `Week ${week}`, // Add "Week " prefix to the week number
-        'Total Winnings': 0
-      }))
+      const weeklyWinnings = weeks.map((week) => {
+        return { week, winnings: 0 }
+      })
 
-      // Calculate winnings for each week
       this.allBets.forEach((bet) => {
-        const weekIndex = bet.week - 1 // Convert week to zero-based index
+        const weekIndex = bet.week - 1
         if (bet.result === 'win') {
           cumulativeWinnings += bet.betPayout
         } else if (bet.result === 'loss') {
           cumulativeWinnings -= bet.betAmount
         }
-
-        // Update the weekly winnings
-        weeklyWinnings[weekIndex]['Total Winnings'] = cumulativeWinnings
+        weeklyWinnings[weekIndex].winnings = cumulativeWinnings
       })
 
-      this.chartData = weeklyWinnings
+      this.chartSeries[0].data = weeklyWinnings.map((item) => item.winnings)
     },
     calculateStats() {
       const wins = this.allBets.filter((bet) => bet.result === 'win').length
