@@ -110,12 +110,12 @@ export default {
       chartOptions: {
         chart: {
           type: 'line',
-          height: 350,
+          height: 200,
           background: '#000000'
         },
         title: {
-          text: 'Total Winnings Over Time',
-          align: 'left',
+          text: 'Total Winnings',
+          align: 'center',
           style: {
             color: '#FFFFFF'
           }
@@ -136,17 +136,18 @@ export default {
           }
         },
         stroke: {
-          curve: 'smooth'
+          curve: 'straight'
         },
         grid: {
           borderColor: '#333333'
         },
         dataLabels: {
-          enabled: false
+          enabled: true
         },
         tooltip: {
           theme: 'dark'
-        }
+        },
+        colors: ['#c089e8']
       },
       chartSeries: [
         {
