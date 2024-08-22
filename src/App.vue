@@ -2,11 +2,16 @@
   <main class="bg-black">
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
-      <p>Sport: NFL</p>
-      <p>Season: 2023</p>
-      <p>Record: {{ record }}</p>
-      <p>Winnings: ${{ amountTotal }}</p>
-      <div class="mx-auto flex w-4/5"></div>
+      <Card class="mx-auto w-1/5">
+        <CardHeader>
+          <CardTitle>NFL</CardTitle>
+          <CardDescription>2023 Season</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Record: {{ record }}</p>
+          <p>Winnings: ${{ amountTotal }}</p>
+        </CardContent>
+      </Card>
     </section>
 
     <section class="mx-auto w-4/5 max-w-[800px] py-4">
@@ -74,6 +79,14 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 export default {
   components: {
@@ -87,7 +100,13 @@ export default {
     CarouselContent,
     CarouselItem,
     CarouselNext,
-    CarouselPrevious
+    CarouselPrevious,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
   },
   data() {
     return {
