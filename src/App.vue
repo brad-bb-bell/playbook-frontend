@@ -16,10 +16,24 @@
                 }}</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>All Sports</DropdownMenuItem>
+              </DropdownMenuContent> </DropdownMenu
+            >&nbsp;&nbsp;
+            <DropdownMenu>
+              <DropdownMenuTrigger>{{ allSeasons[0] }}</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel class="text-center">Season</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  v-for="season in allSeasons"
+                  :key="season"
+                  @click="console.log(season)"
+                  >{{ season }}</DropdownMenuItem
+                >
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>All Seasons</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </CardTitle>
-          <CardDescription>2023 Season</CardDescription>
         </CardHeader>
         <CardContent>
           <p>Record: {{ record }}</p>
@@ -136,6 +150,7 @@ export default {
       },
       record: '',
       allSports: [],
+      allSeasons: [],
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -254,39 +269,48 @@ export default {
         totalWinnings: item.totalWinnings
       }))
     },
-    calculateStats() {
-      const wins = this.allBets.filter((bet) => bet.result === 'win').length
-      this.amountWon = 0
-      this.allBets.forEach((bet) => {
-        if (bet.result === 'win') {
-          this.amountWon += bet.betPayout
-        }
-      })
-      const losses = this.allBets.filter((bet) => bet.result === 'loss').length
-      this.amountLost = 0
-      this.allBets.forEach((bet) => {
-        if (bet.result === 'loss') {
-          this.amountLost += bet.betAmount
-        }
-      })
-      this.amountTotal = this.amountWon - this.amountLost
-      const pushes = this.allBets.filter((bet) => bet.result === 'push').length
-      this.record = `${wins}-${losses}-${pushes}`
+    calculateStats(bets) {
+      const wins = bets.filter((bet) => bet.result === 'win').length
+      const amountWon = bets.reduce((sum, bet) => {
+        return bet.result === 'win' ? sum + bet.betPayout : sum
+      }, 0)
+
+      const losses = bets.filter((bet) => bet.result === 'loss').length
+      const amountLost = bets.reduce((sum, bet) => {
+        return bet.result === 'loss' ? sum + bet.betAmount : sum
+      }, 0)
+
+      const amountTotal = amountWon - amountLost
+      const pushes = bets.filter((bet) => bet.result === 'push').length
+      const record = `${wins}-${losses}-${pushes}`
 
       // Count the number of bets for each sport
-      const sportCounts = this.allBets.reduce((acc, bet) => {
+      const sportCounts = bets.reduce((acc, bet) => {
         acc[bet.sport] = (acc[bet.sport] || 0) + 1
         return acc
       }, {})
 
       // Create an array of unique sports, sorted by frequency
-      this.allSports = Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
+      const allSports = Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
 
-      return {
-        wins,
-        losses,
-        pushes
-      }
+      const seasonCounts = bets.reduce((acc, bet) => {
+        acc[bet.season] = (acc[bet.season] || 0) + 1
+        return acc
+      }, {})
+      // Create an array of unique years, sorted by most recent year first
+      const allSeasons = Object.keys(seasonCounts)
+        .map(Number) // Convert string years to numbers
+        .sort((a, b) => b - a) // Sort in descending order
+
+      this.wins = wins
+      this.losses = losses
+      this.pushes = pushes
+      this.record = record
+      this.allSports = allSports
+      this.allSeasons = allSeasons
+      this.amountWon = amountWon
+      this.amountLost = amountLost
+      this.amountTotal = amountTotal
     },
     async getAllBets() {
       try {
@@ -294,7 +318,7 @@ export default {
           'https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/'
         )
         this.allBets = response.data.bets
-        this.calculateStats()
+        this.calculateStats(this.allBets)
         this.prepareChartData()
       } catch (error) {
         console.error('Error fetching bets:', error)
