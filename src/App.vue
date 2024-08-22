@@ -55,7 +55,6 @@
       </div>
     </section>
   </main>
-  <!-- <CustomChartTooltip :data="chartData" /> -->
 </template>
 <script>
 import axios from 'axios'
