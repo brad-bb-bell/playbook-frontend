@@ -2,9 +2,23 @@
   <main class="bg-black">
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
+      <!-- Will have to add a conditional if there are no bets -->
       <Card class="mx-auto w-1/5">
         <CardHeader>
-          <CardTitle>NFL</CardTitle>
+          <CardTitle
+            ><DropdownMenu>
+              <DropdownMenuTrigger>{{ allSports[0] }}</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel class="text-center">Sports</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem v-for="sport in allSports" :key="sport">{{
+                  sport
+                }}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>All Sports</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </CardTitle>
           <CardDescription>2023 Season</CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,6 +135,7 @@ export default {
         '3-team-teaser': '3 Team Teaser'
       },
       record: '',
+      allSports: [],
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -257,6 +272,15 @@ export default {
       this.amountTotal = this.amountWon - this.amountLost
       const pushes = this.allBets.filter((bet) => bet.result === 'push').length
       this.record = `${wins}-${losses}-${pushes}`
+
+      // Count the number of bets for each sport
+      const sportCounts = this.allBets.reduce((acc, bet) => {
+        acc[bet.sport] = (acc[bet.sport] || 0) + 1
+        return acc
+      }, {})
+
+      // Create an array of unique sports, sorted by frequency
+      this.allSports = Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
 
       return {
         wins,
