@@ -142,7 +142,22 @@ export default {
           borderColor: '#333333'
         },
         dataLabels: {
-          enabled: true
+          enabled: true,
+          style: {
+            fontSize: '14px',
+            fontFamily: 'Helvetica, Arial, sans-serif',
+            fontWeight: '',
+            colors: ['#000000']
+          },
+          background: {
+            enabled: true,
+            foreColor: '#c089e8',
+            padding: 8,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: '#fff',
+            opacity: 0.9
+          }
         },
         tooltip: {
           theme: 'dark'
