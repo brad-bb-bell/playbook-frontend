@@ -2,38 +2,38 @@
   <main class="bg-black">
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
-      <!-- Will have to add a conditional if there are no bets -->
-      <Card class="mx-auto w-1/5">
+      <Card class="mx-auto w-[222px]">
         <CardHeader>
-          <CardTitle
-            ><DropdownMenu>
-              <DropdownMenuTrigger>{{ allSports[0] }}</DropdownMenuTrigger>
+          <CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel class="text-center">Sports</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem v-for="sport in allSports" :key="sport">{{
-                  sport
-                }}</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>All Sports</DropdownMenuItem>
-              </DropdownMenuContent> </DropdownMenu
-            >&nbsp;&nbsp;
+                <DropdownMenuItem
+                  v-for="sport in allSports"
+                  :key="sport"
+                  @click="handleSportClick(sport)"
+                  >{{ sport }}</DropdownMenuItem
+                >
+              </DropdownMenuContent>
+            </DropdownMenu>
+            &nbsp;
             <DropdownMenu>
-              <DropdownMenuTrigger>{{ allSeasons[0] }}</DropdownMenuTrigger>
+              <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel class="text-center">Season</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   v-for="season in allSeasons"
                   :key="season"
-                  @click="console.log(season)"
+                  @click="handleSeasonClick(season)"
                   >{{ season }}</DropdownMenuItem
                 >
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>All Seasons</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </CardTitle>
+          <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
         </CardHeader>
         <CardContent>
           <p>Record: {{ record }}</p>
@@ -151,6 +151,8 @@ export default {
       record: '',
       allSports: [],
       allSeasons: [],
+      selectedSport: '',
+      selectedSeason: '',
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -227,25 +229,57 @@ export default {
     }
   },
   methods: {
+    handleSportClick(sport) {
+      this.selectedSport = sport
+      this.filterAndUpdateBets()
+    },
+    handleSeasonClick(season) {
+      this.selectedSeason = season
+      this.filterAndUpdateBets()
+    },
+    filterAndUpdateBets() {
+      let filteredBets = this.allBets
+
+      // Filter by sport
+      if (this.selectedSport !== 'All Sports') {
+        filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
+      }
+
+      // Filter by season
+      if (this.selectedSeason !== 'All Seasons') {
+        filteredBets = filteredBets.filter((bet) => bet.season === this.selectedSeason)
+      }
+
+      // Calculate stats for filtered bets
+      const filteredStats = this.calculateStats(filteredBets)
+
+      // Update component data with filtered stats
+      this.record = filteredStats.record
+      this.amountWon = filteredStats.amountWon
+      this.amountLost = filteredStats.amountLost
+      this.amountTotal = filteredStats.amountTotal
+
+      // Prepare chart data for filtered bets
+      this.prepareChartData(filteredBets)
+    },
     getBetTypeLabel(betType) {
       return this.betTypeLabels[betType] || betType
     },
-    prepareChartData() {
+    prepareChartData(bets) {
+      // ... (update your existing prepareChartData to accept bets as an argument)
       const weeks = Array.from({ length: 22 }, (_, i) => i + 1)
       let cumulativeWinnings = 0
 
-      const weeklyData = weeks.map((week) => {
-        return {
-          week,
-          wins: 0,
-          losses: 0,
-          pushes: 0,
-          weekWinnings: 0,
-          totalWinnings: 0
-        }
-      })
+      const weeklyData = weeks.map((week) => ({
+        week,
+        wins: 0,
+        losses: 0,
+        pushes: 0,
+        weekWinnings: 0,
+        totalWinnings: 0
+      }))
 
-      this.allBets.forEach((bet) => {
+      bets.forEach((bet) => {
         const weekIndex = bet.week - 1
         if (bet.result === 'win') {
           weeklyData[weekIndex].wins++
@@ -291,26 +325,32 @@ export default {
       }, {})
 
       // Create an array of unique sports, sorted by frequency
-      const allSports = Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
+      const allSports = [
+        'All Sports',
+        ...Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
+      ]
 
       const seasonCounts = bets.reduce((acc, bet) => {
         acc[bet.season] = (acc[bet.season] || 0) + 1
         return acc
       }, {})
-      // Create an array of unique years, sorted by most recent year first
-      const allSeasons = Object.keys(seasonCounts)
-        .map(Number) // Convert string years to numbers
-        .sort((a, b) => b - a) // Sort in descending order
+      // Create an array of unique seasons, sorted by most recent season first
+      const allSeasons = [
+        'All Seasons',
+        ...Object.keys(seasonCounts).sort((a, b) => b.localeCompare(a))
+      ]
 
-      this.wins = wins
-      this.losses = losses
-      this.pushes = pushes
-      this.record = record
-      this.allSports = allSports
-      this.allSeasons = allSeasons
-      this.amountWon = amountWon
-      this.amountLost = amountLost
-      this.amountTotal = amountTotal
+      return {
+        wins,
+        losses,
+        pushes,
+        record,
+        allSports,
+        allSeasons,
+        amountWon,
+        amountLost,
+        amountTotal
+      }
     },
     async getAllBets() {
       try {
@@ -318,8 +358,24 @@ export default {
           'https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/'
         )
         this.allBets = response.data.bets
-        this.calculateStats(this.allBets)
-        this.prepareChartData()
+
+        // Calculate initial stats for all bets
+        const initialStats = this.calculateStats(this.allBets)
+
+        // Update component data with initial stats
+        this.record = initialStats.record
+        this.allSports = initialStats.allSports
+        this.allSeasons = initialStats.allSeasons
+        this.amountWon = initialStats.amountWon
+        this.amountLost = initialStats.amountLost
+        this.amountTotal = initialStats.amountTotal
+
+        // Set initial selections
+        this.selectedSport = this.allSports[1] || 'All Sports'
+        this.selectedSeason = this.allSeasons[1] || 'All Seasons'
+
+        // Prepare initial chart data
+        this.prepareChartData(this.allBets)
       } catch (error) {
         console.error('Error fetching bets:', error)
       }
