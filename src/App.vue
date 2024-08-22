@@ -9,7 +9,9 @@
       <div class="mx-auto flex w-4/5"></div>
     </section>
 
-    <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
+    <section class="mx-auto w-4/5 py-4">
+      <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
+    </section>
 
     <section class="py-4">
       <h2 class="justify-center text-center font-anek-devanagari text-xl text-white underline">
