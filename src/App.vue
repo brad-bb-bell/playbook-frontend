@@ -9,7 +9,7 @@
       <div class="mx-auto flex w-4/5"></div>
     </section>
 
-    <section class="mx-auto w-4/5 py-4">
+    <section class="mx-auto w-4/5 max-w-[800px] py-4">
       <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
     </section>
 
@@ -111,7 +111,10 @@ export default {
         chart: {
           type: 'line',
           height: 200,
-          background: '#000000'
+          background: '#000000',
+          toolbar: {
+            show: false
+          }
         },
         title: {
           text: 'Total Winnings',
@@ -123,9 +126,13 @@ export default {
         xaxis: {
           categories: Array.from({ length: 22 }, (_, i) => `Week ${i + 1}`),
           labels: {
+            hideOverlappingLabels: true,
             style: {
               colors: '#FFFFFF'
             }
+          },
+          crosshairs: {
+            show: false
           }
         },
         yaxis: {
@@ -142,25 +149,24 @@ export default {
           borderColor: '#333333'
         },
         dataLabels: {
-          enabled: true,
-          style: {
-            fontSize: '14px',
-            fontFamily: 'Helvetica, Arial, sans-serif',
-            fontWeight: '',
-            colors: ['#000000']
-          },
-          background: {
-            enabled: true,
-            foreColor: '#c089e8',
-            padding: 8,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: '#fff',
-            opacity: 0.9
-          }
+          enabled: false
         },
         tooltip: {
-          theme: 'dark'
+          custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+            const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex]
+            return `<div class="custom-tooltip">
+              <span class="week-header">Week ${dataPointIndex + 1}</span>
+              <span class="week-record">${data.weekRecord}</span>
+              <div class="tooltip-row">
+                <span>Week:</span>
+                <span>$${data.weekWinnings}</span>
+              </div>
+              <div class="tooltip-row">
+                <span>Total:</span>
+                <span>$${data.totalWinnings}</span>
+              </div>
+            </div>`
+          }
         },
         colors: ['#c089e8']
       },
@@ -180,21 +186,40 @@ export default {
       const weeks = Array.from({ length: 22 }, (_, i) => i + 1)
       let cumulativeWinnings = 0
 
-      const weeklyWinnings = weeks.map((week) => {
-        return { week, winnings: 0 }
+      const weeklyData = weeks.map((week) => {
+        return {
+          week,
+          wins: 0,
+          losses: 0,
+          pushes: 0,
+          weekWinnings: 0,
+          totalWinnings: 0
+        }
       })
 
       this.allBets.forEach((bet) => {
         const weekIndex = bet.week - 1
         if (bet.result === 'win') {
+          weeklyData[weekIndex].wins++
+          weeklyData[weekIndex].weekWinnings += bet.betPayout
           cumulativeWinnings += bet.betPayout
         } else if (bet.result === 'loss') {
+          weeklyData[weekIndex].losses++
+          weeklyData[weekIndex].weekWinnings -= bet.betAmount
           cumulativeWinnings -= bet.betAmount
+        } else if (bet.result === 'push') {
+          weeklyData[weekIndex].pushes++
         }
-        weeklyWinnings[weekIndex].winnings = cumulativeWinnings
+        weeklyData[weekIndex].totalWinnings = cumulativeWinnings
       })
 
-      this.chartSeries[0].data = weeklyWinnings.map((item) => item.winnings)
+      this.chartSeries[0].data = weeklyData.map((item) => ({
+        x: `Week ${item.week}`,
+        y: item.totalWinnings,
+        weekRecord: `${item.wins}-${item.losses}-${item.pushes}`,
+        weekWinnings: item.weekWinnings,
+        totalWinnings: item.totalWinnings
+      }))
     },
     calculateStats() {
       const wins = this.allBets.filter((bet) => bet.result === 'win').length
@@ -258,3 +283,27 @@ export default {
   }
 }
 </script>
+<style>
+.custom-tooltip {
+  background: #f3f3f3;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+.week-header {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.week-record {
+  display: block;
+  margin-bottom: 2px;
+}
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>
