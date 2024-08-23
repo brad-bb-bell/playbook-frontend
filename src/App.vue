@@ -13,8 +13,6 @@
             <DropdownMenu>
               <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel class="text-center">Sports</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   v-for="sport in allSports"
                   :key="sport"
@@ -27,8 +25,6 @@
             <DropdownMenu>
               <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel class="text-center">Season</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   v-for="season in allSeasons"
                   :key="season"
@@ -492,18 +488,10 @@ export default {
     },
     filterAndUpdateBets() {
       let filteredBets = this.allBets
-      console.log('all bets:', filteredBets)
       // Filter by sport
-      if (this.selectedSport !== 'All Sports') {
-        filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
-      }
-      console.log('afer selected sport:', filteredBets)
+      filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
       // Filter by season
-      console.log('selected season:', this.selectedSeason)
-      if (this.selectedSeason !== 'All Seasons') {
-        filteredBets = filteredBets.filter((bet) => bet.season == this.selectedSeason)
-      }
-      console.log('afer selected season:', filteredBets)
+      filteredBets = filteredBets.filter((bet) => bet.season == this.selectedSeason)
 
       // Calculate stats for filtered bets
       const filteredStats = this.calculateStats(filteredBets)
@@ -581,7 +569,6 @@ export default {
 
       // Create an array of unique sports, sorted by frequency
       const allSports = [
-        'All Sports',
         ...Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
       ]
 
@@ -590,10 +577,7 @@ export default {
         return acc
       }, {})
       // Create an array of unique seasons, sorted by most recent season first
-      const allSeasons = [
-        'All Seasons',
-        ...Object.keys(seasonCounts).sort((a, b) => b.localeCompare(a))
-      ]
+      const allSeasons = [...Object.keys(seasonCounts).sort((a, b) => b.localeCompare(a))]
 
       return {
         wins,
@@ -626,8 +610,8 @@ export default {
         this.amountTotal = initialStats.amountTotal
 
         // Set initial selections
-        this.selectedSport = this.allSports[1] || 'NFL'
-        this.selectedSeason = this.allSeasons[1] || '2023'
+        this.selectedSport = this.allSports[0] || 'NFL'
+        this.selectedSeason = this.allSeasons[0] || '2023'
         this.modalSelectedSport = 'NFL'
         this.modalSelectedSeason = '2024'
         this.newBet.sport = 'NFL'
