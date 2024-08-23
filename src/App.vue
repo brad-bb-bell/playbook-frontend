@@ -42,6 +42,10 @@
       </Card>
     </section>
 
+    <section class="py-4 text-center">
+      <Button size="lg" variant="default" class="" @click="enterNewBet">Enter new bet</Button>
+    </section>
+
     <section class="mx-auto w-4/5 max-w-[800px] py-4">
       <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
     </section>
@@ -92,6 +96,7 @@
 <script>
 import axios from 'axios'
 
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -118,6 +123,7 @@ import {
 
 export default {
   components: {
+    Button,
     Card,
     CardContent,
     CardDescription,
@@ -229,6 +235,9 @@ export default {
     }
   },
   methods: {
+    enterNewBet() {
+      console.log('Enter new bet')
+    },
     handleSportClick(sport) {
       this.selectedSport = sport
       this.filterAndUpdateBets()
