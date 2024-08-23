@@ -102,8 +102,21 @@
           <CardTitle>Enter New Bet</CardTitle>
         </CardHeader>
         <CardContent>
-          <!-- Add your form fields here -->
-          <p>Form fields for new bet will go here</p>
+          <DropdownMenu>
+            <DropdownMenuTrigger>Sport</DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>NFL</DropdownMenuItem>
+              <DropdownMenuItem>NBA</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          &nbsp;
+          <DropdownMenu>
+            <DropdownMenuTrigger>Season</DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem class="border-black">2024</DropdownMenuItem>
+              <DropdownMenuItem>2023</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardContent>
         <CardFooter class="flex justify-end">
           <Button variant="secondary" @click="closeNewBetModal">Cancel</Button>
