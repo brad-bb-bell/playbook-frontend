@@ -98,87 +98,114 @@
     <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeNewBetModal"></div>
       <Card class="z-10 w-96">
-        <CardHeader>
-          <CardTitle class="text-center">Enter New Bet</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="mb-2 text-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger class="text-xl">{{ modalSelectedSport }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="sport in modalSportOptions"
-                  @click="handleModalSportClick(sport)"
-                  >{{ sport }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-            &nbsp;
-            <DropdownMenu>
-              <DropdownMenuTrigger class="text-xl">{{ modalSelectedSeason }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="season in modalSeasonOptions"
-                  @click="handleModalSeasonClick(season)"
-                  >{{ season }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <br />
-            <DropdownMenu>
-              <DropdownMenuTrigger>{{ modalSelectedBetType }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="betType in betTypeLabels"
-                  @click="handleModalBetTypeClick(betType)"
-                  >{{ betType }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div class="grid max-w-md grid-cols-[auto,1fr] items-center gap-x-4 gap-y-2">
-            <div class="text-left">Week:</div>
-            <Input type="text" class="w-2/3" />
+        <form @submit.prevent="handleSubmit">
+          <CardHeader>
+            <CardTitle class="text-center">Enter New Bet</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="mb-2 text-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger class="text-xl">{{ modalSelectedSport }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="sport in modalSportOptions"
+                    @click="handleModalSportClick(sport)"
+                    >{{ sport }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+              &nbsp;
+              <DropdownMenu>
+                <DropdownMenuTrigger class="text-xl">{{ modalSelectedSeason }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="season in modalSeasonOptions"
+                    @click="handleModalSeasonClick(season)"
+                    >{{ season }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <br />
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ modalSelectedBetType }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="betType in betTypeLabels"
+                    @click="handleModalBetTypeClick(betType)"
+                    >{{ betType }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div class="grid max-w-md grid-cols-[auto,1fr] items-center gap-x-4 gap-y-2">
+              <template v-if="modalSelectedBetTypeValue !== 'future'">
+                <label for="week" class="text-left">Week:</label>
+                <Input id="week" type="number" class="w-2/3" required v-model="newBet.week" />
+              </template>
 
-            <div class="text-left">Team:</div>
-            <Input type="text" class="w-2/3" />
+              <label for="team" class="text-left">Team:</label>
+              <Input id="team" type="text" class="w-2/3" required v-model="newBet.team" />
 
-            <div class="text-left">Opponent:</div>
-            <Input type="text" class="w-2/3" />
+              <template v-if="modalSelectedBetTypeValue !== 'future'">
+                <label for="opponent" class="text-left">Opponent:</label>
+                <Input id="opponent" type="text" class="w-2/3" required v-model="newBet.opponent" />
+              </template>
 
-            <div class="text-left">Line:</div>
-            <Input type="text" class="w-2/3" />
+              <template
+                v-if="
+                  modalSelectedBetTypeValue !== 'moneyline' &&
+                  modalSelectedBetTypeValue !== 'future'
+                "
+              >
+                <label for="line" class="text-left">Line:</label>
+                <Input id="line" type="text" class="w-2/3" required v-model="newBet.line" />
+              </template>
 
-            <div class="text-left">Bet Amount:</div>
-            <Input type="text" class="w-2/3" />
+              <label for="betAmount" class="text-left">Bet Amount:</label>
+              <Input
+                id="betAmount"
+                type="number"
+                step="1"
+                class="w-2/3"
+                required
+                v-model="newBet.betAmount"
+              />
 
-            <div class="text-left">Odds:</div>
-            <Input type="text" class="w-2/3" />
+              <label for="odds" class="text-left">Odds:</label>
+              <Input id="odds" type="text" class="w-2/3" required v-model="newBet.odds" />
 
-            <div class="text-left">Payout:</div>
-            <Input type="text" class="w-2/3" />
+              <label for="payout" class="text-left">Payout:</label>
+              <Input
+                id="payout"
+                type="number"
+                step="1"
+                class="w-2/3"
+                required
+                v-model="newBet.betPayout"
+              />
 
-            <div class="text-left">Notes:</div>
-            <Input type="text" class="w-2/3" />
-          </div>
+              <label for="note" class="text-left">Notes:</label>
+              <Textarea id="note" class="w-full" v-model="newBet.notes" />
+            </div>
 
-          <div class="mt-2 text-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger>{{ modalSelectedResult }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="result in modalResultOptions"
-                  @click="handleModalResultClick(result)"
-                  >{{ result }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardContent>
-        <CardFooter class="flex justify-end">
-          <Button variant="secondary" @click="closeNewBetModal">Cancel</Button>
-          <Button class="ml-2" variant="default">Save Bet</Button>
-        </CardFooter>
+            <div class="mt-2 text-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ modalSelectedResult }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="result in modalResultOptions"
+                    @click="handleModalResultClick(result)"
+                    >{{ result }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardContent>
+          <CardFooter class="flex justify-end">
+            <Button type="button" variant="secondary" @click="closeNewBetModal">Cancel</Button>
+            <Button type="submit" class="ml-2" variant="default">Save Bet</Button>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   </transition>
@@ -188,6 +215,7 @@ import axios from 'axios'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Card,
   CardContent,
@@ -232,7 +260,8 @@ export default {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    Input
+    Input,
+    Textarea
   },
   data() {
     return {
@@ -259,6 +288,20 @@ export default {
       modalSelectedBetTypeValue: 'spread',
       modalSelectedResult: 'Pending',
       modalResultOptions: ['Pending', 'Win', 'Loss', 'Push'],
+      newBet: {
+        sport: '',
+        season: '',
+        betType: '',
+        week: '',
+        team: '',
+        line: '',
+        opponent: '',
+        betAmount: '',
+        odds: '',
+        betPayout: '',
+        notes: '',
+        result: 'pending'
+      },
       showNewBetModal: false,
       amountWon: 0,
       amountLost: 0,
@@ -336,22 +379,44 @@ export default {
     }
   },
   methods: {
+    handleSubmit() {
+      console.log('Form submitted: ', this.newBet)
+      this.closeNewBetModal()
+      this.newBet = {
+        sport: '',
+        season: '',
+        betType: '',
+        week: '',
+        team: '',
+        line: '',
+        opponent: '',
+        betAmount: '',
+        odds: '',
+        betPayout: '',
+        notes: '',
+        result: 'pending'
+      }
+    },
     handleModalResultClick(result) {
       this.modalSelectedResult = result
+      this.newBet.result = result.toLowerCase()
     },
     handleModalBetTypeClick(type) {
       Object.keys(this.betTypeLabels).forEach((key) => {
         if (this.betTypeLabels[key] === type) {
           this.modalSelectedBetTypeValue = key
           this.modalSelectedBetType = type
+          this.newBet.betType = key
         }
       })
     },
     handleModalSportClick(sport) {
       this.modalSelectedSport = sport
+      this.newBet.sport = sport
     },
     handleModalSeasonClick(season) {
       this.modalSelectedSeason = season
+      this.newBet.season = season
     },
     openNewBetModal() {
       this.showNewBetModal = true
@@ -507,6 +572,9 @@ export default {
         this.selectedSeason = this.allSeasons[1] || '2023'
         this.modalSelectedSport = 'NFL'
         this.modalSelectedSeason = '2024'
+        this.newBet.sport = 'NFL'
+        this.newBet.season = '2024'
+        this.newBet.betType = 'spread'
 
         // Prepare initial chart data
         this.prepareChartData(this.allBets)
