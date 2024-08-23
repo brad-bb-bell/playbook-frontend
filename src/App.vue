@@ -68,6 +68,7 @@
               v-for="bet in cardCarousel"
               :key="bet._id"
               class="mx-1 h-[250px] text-center"
+              @click="openEditBetModal(bet)"
             >
               <Card class="flex h-[250px] flex-col justify-between">
                 <CardHeader>
@@ -112,6 +113,124 @@
       </div>
     </section>
   </main>
+
+  <!-- Edit Bet Modal -->
+  <transition name="fade">
+    <div v-if="showEditBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeEditBetModal"></div>
+      <Card class="z-10 w-96">
+        <form @submit.prevent="handleEditSubmit">
+          <CardHeader>
+            <CardTitle class="text-center">Modify Bet</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="mb-2 text-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger class="text-xl">{{ editBet.sport }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="sport in modalSportOptions"
+                    @click="this.editBet.sport = sport"
+                    >{{ sport }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+              &nbsp;
+              <DropdownMenu>
+                <DropdownMenuTrigger class="text-xl">{{ editBet.season }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="season in modalSeasonOptions"
+                    @click="this.editBet.season = season"
+                    >{{ season }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <br />
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ editBet.betType }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="betType in betTypeLabels"
+                    @click="this.editBet.betType = betType"
+                    >{{ betType }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div class="grid max-w-md grid-cols-[auto,1fr] items-center gap-x-4 gap-y-2">
+              <template v-if="editBet.betType !== 'future'">
+                <label for="week" class="text-left">Week:</label>
+                <Input id="week" type="number" class="w-2/3" required v-model="editBet.week" />
+              </template>
+
+              <label for="team" class="text-left">Team:</label>
+              <Input id="team" type="text" class="w-2/3" required v-model="editBet.team" />
+
+              <template v-if="editBet.betType !== 'future'">
+                <label for="opponent" class="text-left">Opponent:</label>
+                <Input
+                  id="opponent"
+                  type="text"
+                  class="w-2/3"
+                  required
+                  v-model="editBet.opponent"
+                />
+              </template>
+
+              <template v-if="editBet.betType !== 'moneyline' && editBet.betType !== 'future'">
+                <label for="line" class="text-left">Line:</label>
+                <Input id="line" type="text" class="w-2/3" required v-model="editBet.line" />
+              </template>
+
+              <label for="betAmount" class="text-left">Bet Amount:</label>
+              <Input
+                id="betAmount"
+                type="number"
+                step="1"
+                class="w-2/3"
+                required
+                v-model="editBet.betAmount"
+              />
+
+              <label for="odds" class="text-left">Odds:</label>
+              <Input id="odds" type="text" class="w-2/3" required v-model="editBet.odds" />
+
+              <label for="payout" class="text-left">Payout:</label>
+              <Input
+                id="payout"
+                type="number"
+                step="1"
+                class="w-2/3"
+                required
+                v-model="editBet.betPayout"
+              />
+
+              <label for="note" class="text-left">Notes:</label>
+              <Textarea id="note" class="w-full" v-model="editBet.notes" />
+            </div>
+
+            <div class="mt-2 text-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ editBet.result }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="result in resultOptions"
+                    @click="this.editBet.result = result.toLowerCase()"
+                    >{{ result }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardContent>
+          <CardFooter class="flex justify-end">
+            <Button type="button" variant="secondary" @click="closeEditBetModal">Cancel</Button>
+            <Button type="submit" class="ml-2" variant="default">Save Bet</Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  </transition>
 
   <!-- New Bet Modal -->
   <transition name="fade">
@@ -325,7 +444,9 @@ export default {
         notes: '',
         result: 'pending'
       },
+      editBet: {},
       showNewBetModal: false,
+      showEditBetModal: false,
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -402,11 +523,61 @@ export default {
     }
   },
   methods: {
+    closeEditBetModal() {
+      this.showEditBetModal = false
+    },
+    openEditBetModal(bet) {
+      this.showEditBetModal = true
+
+      // Create a deep copy of the bet object
+      this.editBet = JSON.parse(JSON.stringify(bet))
+
+      // Convert arrays to comma-separated strings
+      for (let key in this.editBet) {
+        if (Array.isArray(this.editBet[key])) {
+          this.editBet[key] = this.editBet[key].join(', ')
+        }
+      }
+    },
     handleResultClick(result) {
       this.cardCarousel = this.allBets
         .filter((bet) => bet.result === result.toLowerCase())
         .sort((a, b) => new Date(b.date) - new Date(a.date))
       this.selectedBetResult = result
+    },
+    async submitEditBet() {
+      try {
+        // Create a copy of the newBet object
+        const betToSubmit = { ...this.editBet }
+
+        // Convert team, opponent, and line to arrays if they contain commas
+        ;['team', 'opponent', 'line'].forEach((field) => {
+          if (typeof betToSubmit[field] === 'string' && betToSubmit[field].includes(',')) {
+            betToSubmit[field] = betToSubmit[field].split(',').map((item) => item.trim())
+          }
+        })
+
+        const response = await axios.patch(
+          `https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${this.editBet._id}`,
+          betToSubmit
+        )
+        // Find the index of the bet to update in allBets
+        const betIndex = this.allBets.findIndex((bet) => bet._id === this.editBet._id)
+
+        if (betIndex !== -1) {
+          // Update the bet in the allBets array
+          this.allBets[betIndex] = response.data.bet
+
+          this.cardCarousel = this.allBets
+            .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+        } else {
+          console.warn('Edited bet not found in allBets array')
+        }
+        this.filterAndUpdateBets()
+      } catch (error) {
+        console.error('Error submitting new bet: ', error)
+      }
     },
     async submitNewBet() {
       try {
@@ -448,6 +619,10 @@ export default {
         notes: '',
         result: 'pending'
       }
+    },
+    handleEditSubmit() {
+      this.submitEditBet()
+      this.closeEditBetModal()
     },
     handleModalResultClick(result) {
       this.modalSelectedResult = result
