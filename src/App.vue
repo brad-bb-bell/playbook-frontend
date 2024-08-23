@@ -99,24 +99,42 @@
       <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeNewBetModal"></div>
       <Card class="z-10 w-96">
         <CardHeader>
-          <CardTitle>Enter New Bet</CardTitle>
+          <CardTitle class="text-center">Enter New Bet</CardTitle>
         </CardHeader>
         <CardContent>
-          <DropdownMenu>
-            <DropdownMenuTrigger>Sport</DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>NFL</DropdownMenuItem>
-              <DropdownMenuItem>NBA</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          &nbsp;
-          <DropdownMenu>
-            <DropdownMenuTrigger>Season</DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem class="border-black">2024</DropdownMenuItem>
-              <DropdownMenuItem>2023</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div class="mb-2 text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger class="text-xl">Sport</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>NFL</DropdownMenuItem>
+                <DropdownMenuItem>NBA</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            &nbsp;
+            <DropdownMenu>
+              <DropdownMenuTrigger class="text-xl">Season</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>2024</DropdownMenuItem>
+                <DropdownMenuItem>2023</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div class="grid max-w-md grid-cols-[auto,1fr] items-center gap-x-4 gap-y-2">
+            <div class="text-left">Team:</div>
+            <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Opponent:</div>
+            <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Week:</div>
+            <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Bet Amount:</div>
+            <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Bet Payout:</div>
+            <Input type="text" class="w-2/3" />
+          </div>
         </CardContent>
         <CardFooter class="flex justify-end">
           <Button variant="secondary" @click="closeNewBetModal">Cancel</Button>
@@ -130,6 +148,7 @@
 import axios from 'axios'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Card,
   CardContent,
@@ -173,7 +192,8 @@ export default {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuTrigger
+    DropdownMenuTrigger,
+    Input
   },
   data() {
     return {
