@@ -290,6 +290,7 @@ export default {
   data() {
     return {
       allBets: [],
+      chartBets: [],
       cardCarousel: [],
       betTypeLabels: {
         spread: 'Spread',
@@ -491,16 +492,18 @@ export default {
     },
     filterAndUpdateBets() {
       let filteredBets = this.allBets
-
+      console.log('all bets:', filteredBets)
       // Filter by sport
       if (this.selectedSport !== 'All Sports') {
         filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
       }
-
+      console.log('afer selected sport:', filteredBets)
       // Filter by season
+      console.log('selected season:', this.selectedSeason)
       if (this.selectedSeason !== 'All Seasons') {
-        filteredBets = filteredBets.filter((bet) => bet.season === this.selectedSeason)
+        filteredBets = filteredBets.filter((bet) => bet.season == this.selectedSeason)
       }
+      console.log('afer selected season:', filteredBets)
 
       // Calculate stats for filtered bets
       const filteredStats = this.calculateStats(filteredBets)
@@ -632,7 +635,7 @@ export default {
         this.newBet.betType = 'spread'
 
         // Prepare initial chart data
-        this.prepareChartData(this.allBets)
+        this.filterAndUpdateBets()
 
         // Add pending bets to cardCarousel and sort by most recent
         this.cardCarousel = this.allBets
