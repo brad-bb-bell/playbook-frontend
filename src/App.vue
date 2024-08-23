@@ -379,8 +379,31 @@ export default {
     }
   },
   methods: {
+    async submitNewBet() {
+      try {
+        // Create a copy of the newBet object
+        const betToSubmit = { ...this.newBet }
+
+        // Convert team, opponent, and line to arrays if they contain commas
+        ;['team', 'opponent', 'line'].forEach((field) => {
+          if (typeof betToSubmit[field] === 'string' && betToSubmit[field].includes(',')) {
+            betToSubmit[field] = betToSubmit[field].split(',').map((item) => item.trim())
+          }
+        })
+
+        const response = await axios.post(
+          'https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/',
+          betToSubmit
+        )
+        this.allBets.push(response.data.bet)
+        this.filterAndUpdateBets()
+      } catch (error) {
+        console.error('Error submitting new bet: ', error)
+      }
+    },
     handleSubmit() {
       console.log('Form submitted: ', this.newBet)
+      this.submitNewBet()
       this.closeNewBetModal()
       this.newBet = {
         sport: '',
@@ -603,6 +626,7 @@ export default {
     }
   },
   mounted() {
+    this.login()
     this.getAllBets()
   }
 }
