@@ -104,18 +104,24 @@
         <CardContent>
           <div class="mb-2 text-center">
             <DropdownMenu>
-              <DropdownMenuTrigger class="text-xl">Sport</DropdownMenuTrigger>
+              <DropdownMenuTrigger class="text-xl">{{ modalSelectedSport }}</DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>NFL</DropdownMenuItem>
-                <DropdownMenuItem>NBA</DropdownMenuItem>
+                <DropdownMenuItem
+                  v-for="sport in modalSportOptions"
+                  @click="handleModalSportClick(sport)"
+                  >{{ sport }}</DropdownMenuItem
+                >
               </DropdownMenuContent>
             </DropdownMenu>
             &nbsp;
             <DropdownMenu>
-              <DropdownMenuTrigger class="text-xl">Season</DropdownMenuTrigger>
+              <DropdownMenuTrigger class="text-xl">{{ modalSelectedSeason }}</DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>2024</DropdownMenuItem>
-                <DropdownMenuItem>2023</DropdownMenuItem>
+                <DropdownMenuItem
+                  v-for="season in modalSeasonOptions"
+                  @click="handleModalSeasonClick(season)"
+                  >{{ season }}</DropdownMenuItem
+                >
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -212,6 +218,10 @@ export default {
       allSeasons: [],
       selectedSport: '',
       selectedSeason: '',
+      modalSelectedSport: '',
+      modalSportOptions: ['NFL', 'NBA'],
+      modalSelectedSeason: '',
+      modalSeasonOptions: ['2023', '2024'],
       showNewBetModal: false,
       amountWon: 0,
       amountLost: 0,
@@ -289,6 +299,12 @@ export default {
     }
   },
   methods: {
+    handleModalSportClick(sport) {
+      this.modalSelectedSport = sport
+    },
+    handleModalSeasonClick(season) {
+      this.modalSelectedSeason = season
+    },
     openNewBetModal() {
       this.showNewBetModal = true
       document.body.style.overflow = 'hidden' // Prevent scrolling
@@ -439,8 +455,10 @@ export default {
         this.amountTotal = initialStats.amountTotal
 
         // Set initial selections
-        this.selectedSport = this.allSports[1] || 'All Sports'
-        this.selectedSeason = this.allSeasons[1] || 'All Seasons'
+        this.selectedSport = this.allSports[1] || 'NFL'
+        this.selectedSeason = this.allSeasons[1] || '2023'
+        this.modalSelectedSport = 'NFL'
+        this.modalSelectedSeason = '2024'
 
         // Prepare initial chart data
         this.prepareChartData(this.allBets)
