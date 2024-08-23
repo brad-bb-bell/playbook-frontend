@@ -52,13 +52,27 @@
     </section>
 
     <section class="py-4">
-      <h2 class="justify-center text-center font-anek-devanagari text-xl text-white underline">
-        Bets
+      <h2 class="justify-center text-center font-anek-devanagari text-2xl text-white">
+        <DropdownMenu>
+          <DropdownMenuTrigger>{{ selectedBetResult }}</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              v-for="result in resultOptions"
+              :key="result"
+              @click="handleResultClick(result)"
+              >{{ result }}</DropdownMenuItem
+            >
+          </DropdownMenuContent> </DropdownMenu
+        >&nbsp; Bets
       </h2>
-      <div class="mx-auto flex w-4/5">
+      <div class="mx-auto flex w-4/5 max-w-[800px]">
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
           <CarouselContent class="w-[300px]">
-            <CarouselItem v-for="bet in allBets" :key="bet._id" class="mx-1 h-[250px] text-center">
+            <CarouselItem
+              v-for="bet in cardCarousel"
+              :key="bet._id"
+              class="mx-1 h-[250px] text-center"
+            >
               <Card class="flex h-[250px] flex-col justify-between">
                 <CardHeader>
                   <CardTitle>{{ getBetTypeLabel(bet.betType) }}</CardTitle>
@@ -203,7 +217,7 @@
                 <DropdownMenuTrigger>{{ modalSelectedResult }}</DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    v-for="result in modalResultOptions"
+                    v-for="result in resultOptions"
                     @click="handleModalResultClick(result)"
                     >{{ result }}</DropdownMenuItem
                   >
@@ -276,6 +290,7 @@ export default {
   data() {
     return {
       allBets: [],
+      cardCarousel: [],
       betTypeLabels: {
         spread: 'Spread',
         moneyline: 'Moneyline',
@@ -297,7 +312,8 @@ export default {
       modalSelectedBetType: 'Spread',
       modalSelectedBetTypeValue: 'spread',
       modalSelectedResult: 'Pending',
-      modalResultOptions: ['Pending', 'Win', 'Loss', 'Push'],
+      resultOptions: ['Pending', 'Win', 'Loss', 'Push'],
+      selectedBetResult: 'Pending',
       newBet: {
         sport: '',
         season: '',
@@ -389,6 +405,12 @@ export default {
     }
   },
   methods: {
+    handleResultClick(result) {
+      this.cardCarousel = this.allBets
+        .filter((bet) => bet.result === result.toLowerCase())
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+      this.selectedBetResult = result
+    },
     async submitNewBet() {
       try {
         // Create a copy of the newBet object
@@ -611,6 +633,11 @@ export default {
 
         // Prepare initial chart data
         this.prepareChartData(this.allBets)
+
+        // Add pending bets to cardCarousel and sort by most recent
+        this.cardCarousel = this.allBets
+          .filter((bet) => bet.result === 'pending')
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
       } catch (error) {
         console.error('Error fetching bets:', error)
       }
