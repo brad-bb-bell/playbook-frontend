@@ -1,6 +1,11 @@
 <template>
   <main class="bg-black">
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
+
+    <section class="py-4 text-center">
+      <Button size="lg" variant="default" class="" @click="enterNewBet">Enter New Bet</Button>
+    </section>
+
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
       <Card class="mx-auto w-[222px]">
         <CardHeader>
@@ -40,10 +45,6 @@
           <p>Winnings: ${{ amountTotal }}</p>
         </CardContent>
       </Card>
-    </section>
-
-    <section class="py-4 text-center">
-      <Button size="lg" variant="default" class="" @click="enterNewBet">Enter new bet</Button>
     </section>
 
     <section class="mx-auto w-4/5 max-w-[800px] py-4">
