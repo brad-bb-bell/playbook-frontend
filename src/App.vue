@@ -65,10 +65,19 @@
                   <CardDescription>Week {{ bet.week }}</CardDescription>
                 </CardHeader>
                 <CardContent class="flex-grow">
-                  <div v-for="(team, index) in bet.team" :key="index">
-                    <p>
-                      {{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }} {{ bet.odds }}
-                    </p>
+                  <div v-if="['2-team-teaser', '3-team-teaser', 'parlay'].includes(bet.betType)">
+                    <div v-for="(team, index) in bet.team" :key="index">
+                      <p>{{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }}</p>
+                    </div>
+                    <p class="mt-2">{{ bet.odds }}</p>
+                  </div>
+                  <div v-else>
+                    <div v-for="(team, index) in bet.team" :key="index">
+                      <p>
+                        {{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }}
+                        {{ bet.odds }}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter class="mx-auto mt-auto">
@@ -93,6 +102,7 @@
       </div>
     </section>
   </main>
+
   <!-- New Bet Modal -->
   <transition name="fade">
     <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
