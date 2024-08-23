@@ -124,22 +124,55 @@
                 >
               </DropdownMenuContent>
             </DropdownMenu>
+            <br />
+            <DropdownMenu>
+              <DropdownMenuTrigger>{{ modalSelectedBetType }}</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  v-for="betType in betTypeLabels"
+                  @click="handleModalBetTypeClick(betType)"
+                  >{{ betType }}</DropdownMenuItem
+                >
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div class="grid max-w-md grid-cols-[auto,1fr] items-center gap-x-4 gap-y-2">
+            <div class="text-left">Week:</div>
+            <Input type="text" class="w-2/3" />
+
             <div class="text-left">Team:</div>
             <Input type="text" class="w-2/3" />
 
             <div class="text-left">Opponent:</div>
             <Input type="text" class="w-2/3" />
 
-            <div class="text-left">Week:</div>
+            <div class="text-left">Line:</div>
             <Input type="text" class="w-2/3" />
 
             <div class="text-left">Bet Amount:</div>
             <Input type="text" class="w-2/3" />
 
-            <div class="text-left">Bet Payout:</div>
+            <div class="text-left">Odds:</div>
             <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Payout:</div>
+            <Input type="text" class="w-2/3" />
+
+            <div class="text-left">Notes:</div>
+            <Input type="text" class="w-2/3" />
+          </div>
+
+          <div class="mt-2 text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger>{{ modalSelectedResult }}</DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  v-for="result in modalResultOptions"
+                  @click="handleModalResultClick(result)"
+                  >{{ result }}</DropdownMenuItem
+                >
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
         <CardFooter class="flex justify-end">
@@ -222,6 +255,10 @@ export default {
       modalSportOptions: ['NFL', 'NBA'],
       modalSelectedSeason: '',
       modalSeasonOptions: ['2023', '2024'],
+      modalSelectedBetType: 'Spread',
+      modalSelectedBetTypeValue: 'spread',
+      modalSelectedResult: 'Pending',
+      modalResultOptions: ['Pending', 'Win', 'Loss', 'Push'],
       showNewBetModal: false,
       amountWon: 0,
       amountLost: 0,
@@ -299,6 +336,17 @@ export default {
     }
   },
   methods: {
+    handleModalResultClick(result) {
+      this.modalSelectedResult = result
+    },
+    handleModalBetTypeClick(type) {
+      Object.keys(this.betTypeLabels).forEach((key) => {
+        if (this.betTypeLabels[key] === type) {
+          this.modalSelectedBetTypeValue = key
+          this.modalSelectedBetType = type
+        }
+      })
+    },
     handleModalSportClick(sport) {
       this.modalSelectedSport = sport
     },
