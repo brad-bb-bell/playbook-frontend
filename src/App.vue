@@ -3,7 +3,7 @@
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
 
     <section class="py-4 text-center">
-      <Button size="lg" variant="default" class="" @click="enterNewBet">Enter New Bet</Button>
+      <Button size="lg" variant="default" class="" @click="openNewBetModal">Enter New Bet</Button>
     </section>
 
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
@@ -93,6 +93,25 @@
       </div>
     </section>
   </main>
+  <!-- New Bet Modal -->
+  <transition name="fade">
+    <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeNewBetModal"></div>
+      <Card class="z-10 w-96">
+        <CardHeader>
+          <CardTitle>Enter New Bet</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <!-- Add your form fields here -->
+          <p>Form fields for new bet will go here</p>
+        </CardContent>
+        <CardFooter class="flex justify-end">
+          <Button variant="secondary" @click="closeNewBetModal">Cancel</Button>
+          <Button class="ml-2" variant="default">Save Bet</Button>
+        </CardFooter>
+      </Card>
+    </div>
+  </transition>
 </template>
 <script>
 import axios from 'axios'
@@ -160,6 +179,7 @@ export default {
       allSeasons: [],
       selectedSport: '',
       selectedSeason: '',
+      showNewBetModal: false,
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -236,8 +256,13 @@ export default {
     }
   },
   methods: {
-    enterNewBet() {
-      console.log('Enter new bet')
+    openNewBetModal() {
+      this.showNewBetModal = true
+      document.body.style.overflow = 'hidden' // Prevent scrolling
+    },
+    closeNewBetModal() {
+      this.showNewBetModal = false
+      document.body.style.overflow = '' // Re-enable scrolling
     },
     handleSportClick(sport) {
       this.selectedSport = sport
