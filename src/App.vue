@@ -47,6 +47,7 @@
       <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
     </section>
 
+    <!-- Bet Carousel -->
     <section class="py-4">
       <h2 class="justify-center text-center font-anek-devanagari text-2xl text-white">
         <DropdownMenu>
@@ -60,6 +61,20 @@
             >
           </DropdownMenuContent> </DropdownMenu
         >&nbsp; Bets
+        <!-- Eventually will have to change this to handle if the season is not the current season -->
+        <span v-if="selectedSeason !== '2024'">
+          <DropdownMenu>
+            <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                v-for="season in allSeasons"
+                :key="season"
+                @click="handleSeasonClick(season)"
+                >{{ season }}</DropdownMenuItem
+              >
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       </h2>
       <div class="mx-auto flex w-4/5 max-w-[800px]">
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
@@ -233,9 +248,14 @@
               </DropdownMenu>
             </div>
           </CardContent>
-          <CardFooter class="flex justify-end">
-            <Button type="button" variant="secondary" @click="closeEditBetModal">Cancel</Button>
-            <Button type="submit" class="ml-2" variant="default">Save Bet</Button>
+          <CardFooter class="grid grid-cols-3 gap-2">
+            <Button type="button" variant="destructive" @click="deleteBet" class="w-full"
+              >Delete</Button
+            >
+            <Button type="button" variant="secondary" @click="closeEditBetModal" class="w-full"
+              >Cancel</Button
+            >
+            <Button type="submit" variant="default" class="w-full">Save</Button>
           </CardFooter>
         </form>
       </Card>
