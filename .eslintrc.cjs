@@ -32,7 +32,13 @@ module.exports = {
       'always',
       {
         js: 'never',
-        vue: 'never'
+        vue: 'always'
+      }
+    ],
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: ['**/.eslintrc.{js,cjs}', '**/.eslintrc.js', 'vite.config.js']
       }
     ]
   }
