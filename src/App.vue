@@ -79,6 +79,13 @@
       <div class="mx-auto flex w-4/5 max-w-[800px]">
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
           <CarouselContent class="w-[300px]">
+            <CarouselItem v-if="cardCarousel.length === 0" class="mx-1 h-[250px] text-center">
+              <Card class="flex h-[250px] flex-col items-center justify-center">
+                <CardContent>
+                  <p class="text-lg">No bets to be displayed</p>
+                </CardContent>
+              </Card>
+            </CarouselItem>
             <CarouselItem
               v-for="bet in cardCarousel"
               :key="bet._id"
@@ -557,8 +564,20 @@ export default {
     }
   },
   methods: {
-    deleteBet(id) {
-      console.log('Deleting bet with id:', id)
+    async deleteBet(id) {
+      try {
+        const response = await axios.delete(
+          `https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${id}`
+        )
+        this.allBets = this.allBets.filter((bet) => bet._id !== id)
+        this.cardCarousel = this.allBets
+          .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+        this.filterAndUpdateBets()
+        this.closeEditBetModal()
+      } catch (error) {
+        console.error('Error deleting bet: ', error)
+      }
     },
     closeEditBetModal() {
       this.showEditBetModal = false
@@ -633,13 +652,15 @@ export default {
           betToSubmit
         )
         this.allBets.push(response.data.bet)
+        this.cardCarousel = this.allBets
+          .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
         this.filterAndUpdateBets()
       } catch (error) {
         console.error('Error submitting new bet: ', error)
       }
     },
     handleSubmit() {
-      console.log('Form submitted: ', this.newBet)
       this.submitNewBet()
       this.closeNewBetModal()
       this.newBet = {
