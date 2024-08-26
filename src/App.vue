@@ -774,7 +774,9 @@ export default {
         this.allBets = response.data.bets
 
         // Calculate initial stats for all bets
-        const initialStats = this.calculateStats(this.allBets)
+        const initialStats = this.calculateStats(
+          this.allBets.filter((bet) => bet.status !== 'pending')
+        )
 
         // Update component data with initial stats
         this.record = initialStats.record
