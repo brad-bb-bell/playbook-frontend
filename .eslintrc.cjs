@@ -17,6 +17,7 @@ module.exports = {
     ecmaVersion: 'latest'
   },
   settings: {
+    // npm install --save-dev eslint-import-resolver-alias
     'import/resolver': {
       alias: {
         map: [['@', './src']],
