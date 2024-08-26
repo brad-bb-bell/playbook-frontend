@@ -249,7 +249,11 @@
             </div>
           </CardContent>
           <CardFooter class="grid grid-cols-3 gap-2">
-            <Button type="button" variant="destructive" @click="deleteBet" class="w-full"
+            <Button
+              type="button"
+              variant="destructive"
+              @click="deleteBet(editBet._id)"
+              class="w-full"
               >Delete</Button
             >
             <Button type="button" variant="secondary" @click="closeEditBetModal" class="w-full"
@@ -391,14 +395,14 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card'
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
-  CarouselPrevious
+  CarouselPrevious,
 } from '@/components/ui/carousel'
 import {
   DropdownMenu,
@@ -406,7 +410,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
 export default {
@@ -430,7 +434,7 @@ export default {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     Input,
-    Textarea
+    Textarea,
   },
   data() {
     return {
@@ -444,7 +448,7 @@ export default {
         future: 'Future',
         parlay: 'Parlay',
         '2-team-teaser': '2 Team Teaser',
-        '3-team-teaser': '3 Team Teaser'
+        '3-team-teaser': '3 Team Teaser',
       },
       record: '',
       allSports: [],
@@ -472,7 +476,7 @@ export default {
         odds: '',
         betPayout: '',
         notes: '',
-        result: 'pending'
+        result: 'pending',
       },
       editBet: {},
       showNewBetModal: false,
@@ -487,43 +491,43 @@ export default {
           height: 200,
           background: '#000000',
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         title: {
           text: 'Total Winnings',
           align: 'center',
           style: {
-            color: '#FFFFFF'
-          }
+            color: '#FFFFFF',
+          },
         },
         xaxis: {
           categories: Array.from({ length: 22 }, (_, i) => `Week ${i + 1}`),
           labels: {
             hideOverlappingLabels: true,
             style: {
-              colors: '#FFFFFF'
-            }
+              colors: '#FFFFFF',
+            },
           },
           crosshairs: {
-            show: false
-          }
+            show: false,
+          },
         },
         yaxis: {
           labels: {
             style: {
-              colors: '#FFFFFF'
-            }
-          }
+              colors: '#FFFFFF',
+            },
+          },
         },
         stroke: {
-          curve: 'straight'
+          curve: 'straight',
         },
         grid: {
-          borderColor: '#333333'
+          borderColor: '#333333',
         },
         dataLabels: {
-          enabled: false
+          enabled: false,
         },
         tooltip: {
           custom({ series, seriesIndex, dataPointIndex, w }) {
@@ -540,19 +544,22 @@ export default {
                 <span>$${data.totalWinnings}</span>
               </div>
             </div>`
-          }
+          },
         },
-        colors: ['#c089e8']
+        colors: ['#c089e8'],
       },
       chartSeries: [
         {
           name: 'Total Winnings',
-          data: []
-        }
-      ]
+          data: [],
+        },
+      ],
     }
   },
   methods: {
+    deleteBet(id) {
+      console.log('Deleting bet with id:', id)
+    },
     closeEditBetModal() {
       this.showEditBetModal = false
     },
@@ -647,7 +654,7 @@ export default {
         odds: '',
         betPayout: '',
         notes: '',
-        result: 'pending'
+        result: 'pending',
       }
     },
     handleEditSubmit() {
@@ -727,7 +734,7 @@ export default {
         losses: 0,
         pushes: 0,
         weekWinnings: 0,
-        totalWinnings: 0
+        totalWinnings: 0,
       }))
 
       bets.forEach((bet) => {
@@ -751,7 +758,7 @@ export default {
         y: item.totalWinnings,
         weekRecord: `${item.wins}-${item.losses}-${item.pushes}`,
         weekWinnings: item.weekWinnings,
-        totalWinnings: item.totalWinnings
+        totalWinnings: item.totalWinnings,
       }))
 
       // Update chart options to show only the weeks with data
@@ -780,7 +787,7 @@ export default {
 
       // Create an array of unique sports, sorted by frequency
       const allSports = [
-        ...Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a])
+        ...Object.keys(sportCounts).sort((a, b) => sportCounts[b] - sportCounts[a]),
       ]
 
       const seasonCounts = bets.reduce((acc, bet) => {
@@ -799,7 +806,7 @@ export default {
         allSeasons,
         amountWon,
         amountLost,
-        amountTotal
+        amountTotal,
       }
     },
     async getAllBets() {
@@ -846,7 +853,7 @@ export default {
       axios
         .post('https://playbook-api-399674c1bec2.herokuapp.com/api/v1/auth/login/', {
           email: 'brad.bb.bell@gmail.com',
-          password: 'passwordbb'
+          password: 'passwordbb',
         })
         .then((response) => {
           this.username = response.data.username
@@ -860,12 +867,12 @@ export default {
     logout() {
       localStorage.removeItem('token')
       axios.defaults.headers.common.Authorization = ''
-    }
+    },
   },
   mounted() {
     this.login()
     this.getAllBets()
-  }
+  },
 }
 </script>
 <style>
