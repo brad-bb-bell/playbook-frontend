@@ -684,8 +684,11 @@ export default {
       return this.betTypeLabels[betType] || betType
     },
     prepareChartData(bets) {
-      // ... (update your existing prepareChartData to accept bets as an argument)
-      const weeks = Array.from({ length: 22 }, (_, i) => i + 1)
+      // Find the maximum week number from the bets
+      const maxWeek = Math.max(...bets.map((bet) => bet.week), 0)
+
+      // Use maxWeek as the number of weeks to display
+      const weeks = Array.from({ length: maxWeek }, (_, i) => i + 1)
       let cumulativeWinnings = 0
 
       const weeklyData = weeks.map((week) => ({
@@ -720,6 +723,9 @@ export default {
         weekWinnings: item.weekWinnings,
         totalWinnings: item.totalWinnings
       }))
+
+      // Update chart options to show only the weeks with data
+      this.chartOptions.xaxis.categories = weeks.map((week) => `Week ${week}`)
     },
     calculateStats(bets) {
       const wins = bets.filter((bet) => bet.result === 'win').length
