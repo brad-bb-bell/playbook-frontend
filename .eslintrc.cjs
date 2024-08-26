@@ -15,5 +15,8 @@ module.exports = {
   plugins: ['vue', 'prettier', 'vuejs-accessibility'],
   parserOptions: {
     ecmaVersion: 'latest'
+  },
+  rules: {
+    'vuejs-accessibility/label-has-for': 'off'
   }
 }

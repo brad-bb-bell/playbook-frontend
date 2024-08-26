@@ -117,7 +117,13 @@
   <!-- Edit Bet Modal -->
   <transition name="fade">
     <div v-if="showEditBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeEditBetModal"></div>
+      <button
+        class="absolute inset-0 h-full w-full bg-black bg-opacity-90 p-0 focus:outline-none"
+        @click="closeEditBetModal"
+        aria-label="Close modal"
+      >
+        <div class="h-full w-full"></div>
+      </button>
       <Card class="z-10 w-96">
         <form @submit.prevent="handleEditSubmit">
           <CardHeader>
@@ -130,6 +136,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="sport in modalSportOptions"
+                    :key="sport"
                     @click="this.editBet.sport = sport"
                     >{{ sport }}</DropdownMenuItem
                   >
@@ -141,6 +148,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="season in modalSeasonOptions"
+                    :key="season"
                     @click="this.editBet.season = season"
                     >{{ season }}</DropdownMenuItem
                   >
@@ -152,6 +160,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="betType in betTypeLabels"
+                    :key="betType"
                     @click="this.editBet.betType = betType"
                     >{{ betType }}</DropdownMenuItem
                   >
@@ -496,7 +505,7 @@ export default {
           enabled: false
         },
         tooltip: {
-          custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+          custom({ series, seriesIndex, dataPointIndex, w }) {
             const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex]
             return `<div class="custom-tooltip">
               <span class="week-header">Week ${dataPointIndex + 1}</span>
@@ -533,7 +542,7 @@ export default {
       this.editBet = JSON.parse(JSON.stringify(bet))
 
       // Convert arrays to comma-separated strings
-      for (let key in this.editBet) {
+      for (const key in this.editBet) {
         if (Array.isArray(this.editBet[key])) {
           this.editBet[key] = this.editBet[key].join(', ')
         }
@@ -820,16 +829,16 @@ export default {
         })
         .then((response) => {
           this.username = response.data.username
-          const token = response.data.token
+          const { token } = response.data
           localStorage.setItem('token', token)
           if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+            axios.defaults.headers.common.Authorization = `Bearer ${token}`
           }
         })
     },
     logout() {
       localStorage.removeItem('token')
-      axios.defaults.headers.common['Authorization'] = ''
+      axios.defaults.headers.common.Authorization = ''
     }
   },
   mounted() {
