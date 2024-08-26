@@ -16,7 +16,23 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest'
   },
+  settings: {
+    'import/resolver': {
+      alias: {
+        map: [['@', './src']],
+        extensions: ['.js', '.vue', '.json']
+      }
+    }
+  },
   rules: {
-    'vuejs-accessibility/label-has-for': 'off'
+    'vuejs-accessibility/label-has-for': 'off',
+    'import/extensions': [
+      'error',
+      'always',
+      {
+        js: 'never',
+        vue: 'never'
+      }
+    ]
   }
 }

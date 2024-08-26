@@ -225,6 +225,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="result in resultOptions"
+                    :key="result"
                     @click="this.editBet.result = result.toLowerCase()"
                     >{{ result }}</DropdownMenuItem
                   >
