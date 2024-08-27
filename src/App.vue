@@ -60,21 +60,29 @@
               >{{ result }}</DropdownMenuItem
             >
           </DropdownMenuContent> </DropdownMenu
-        >&nbsp; Bets
-        <!-- Eventually will have to change this to handle if the season is not the current season -->
-        <span v-if="selectedSeason !== '2024'">
-          <DropdownMenu>
-            <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                v-for="season in allSeasons"
-                :key="season"
-                @click="handleSeasonClick(season)"
-                >{{ season }}</DropdownMenuItem
-              >
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </span>
+        >&nbsp;
+        <DropdownMenu>
+          <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              v-for="sport in allSports"
+              :key="sport"
+              @click="handleSportClick(sport)"
+              >{{ sport }}</DropdownMenuItem
+            >
+          </DropdownMenuContent> </DropdownMenu
+        >&nbsp;
+        <DropdownMenu>
+          <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              v-for="season in allSeasons"
+              :key="season"
+              @click="handleSeasonClick(season)"
+              >{{ season }}</DropdownMenuItem
+            >
+          </DropdownMenuContent> </DropdownMenu
+        >&nbsp;Bets
       </h2>
       <div class="mx-auto flex w-4/5 max-w-[800px]">
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
