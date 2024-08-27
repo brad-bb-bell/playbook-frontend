@@ -477,7 +477,7 @@ export default {
       modalSelectedBetType: 'Spread',
       modalSelectedBetTypeValue: 'spread',
       modalSelectedResult: 'Pending',
-      resultOptions: ['Pending', 'Win', 'Loss', 'Push'],
+      resultOptions: ['Pending', 'Win', 'Loss', 'Push', 'All'],
       selectedBetResult: 'Pending',
       newBet: {
         sport: '',
@@ -605,10 +605,8 @@ export default {
       })
     },
     handleResultClick(result) {
-      this.cardCarousel = this.allBets
-        .filter((bet) => bet.result === result.toLowerCase())
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
       this.selectedBetResult = result
+      this.filterAndUpdateBets()
     },
     async submitEditBet() {
       try {
@@ -733,7 +731,16 @@ export default {
       // Filter by sport
       filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
       // Filter by season
-      filteredBets = filteredBets.filter((bet) => bet.season == this.selectedSeason)
+      filteredBets = filteredBets.filter((bet) => bet.season === Number(this.selectedSeason))
+      // Filter by result
+      console.log('i see you', this.filteredBets)
+      if (this.selectedBetResult !== 'All') {
+        this.cardCarousel = filteredBets
+          .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+      } else {
+        this.cardCarousel = filteredBets.sort((a, b) => new Date(b.date) - new Date(a.date))
+      }
 
       // Calculate stats for filtered bets
       const filteredStats = this.calculateStats(filteredBets)
