@@ -588,9 +588,7 @@ export default {
     },
     openEditBetModal(bet) {
       this.showEditBetModal = true
-
-      // Create a deep copy of the bet object
-      this.editBet = JSON.parse(JSON.stringify(bet))
+      this.editBet = { ...bet }
 
       // Convert arrays to comma-separated strings
       Object.entries(this.editBet).forEach(([key, value]) => {
