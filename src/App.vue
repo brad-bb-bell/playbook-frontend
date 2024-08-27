@@ -38,7 +38,7 @@
         </CardHeader>
         <CardContent>
           <p>Record: {{ record }}</p>
-          <p>Winnings: ${{ amountTotal }}</p>
+          <p :class="{ 'text-red-500': amountTotal < 0 }">Winnings: ${{ amountTotal }}</p>
         </CardContent>
       </Card>
     </section>
@@ -284,7 +284,13 @@
   <!-- New Bet Modal -->
   <transition name="fade">
     <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black bg-opacity-90" @click="closeNewBetModal"></div>
+      <button
+        class="absolute inset-0 h-full w-full bg-black bg-opacity-90 p-0 focus:outline-none"
+        @click="closeEditBetModal"
+        aria-label="Close modal"
+      >
+        <div class="h-full w-full"></div>
+      </button>
       <Card class="z-10 w-96">
         <form @submit.prevent="handleSubmit">
           <CardHeader>
@@ -297,6 +303,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="sport in modalSportOptions"
+                    :key="sport"
                     @click="handleModalSportClick(sport)"
                     >{{ sport }}</DropdownMenuItem
                   >
@@ -308,6 +315,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="season in modalSeasonOptions"
+                    :key="season"
                     @click="handleModalSeasonClick(season)"
                     >{{ season }}</DropdownMenuItem
                   >
@@ -319,6 +327,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="betType in betTypeLabels"
+                    :key="betType"
                     @click="handleModalBetTypeClick(betType)"
                     >{{ betType }}</DropdownMenuItem
                   >
@@ -382,6 +391,7 @@
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     v-for="result in resultOptions"
+                    :key="result"
                     @click="handleModalResultClick(result)"
                     >{{ result }}</DropdownMenuItem
                   >
