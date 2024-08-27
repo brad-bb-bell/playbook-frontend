@@ -59,8 +59,8 @@
               @click="handleResultClick(result)"
               >{{ result }}</DropdownMenuItem
             >
-          </DropdownMenuContent> </DropdownMenu
-        >&nbsp;
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -70,8 +70,8 @@
               @click="handleSportClick(sport)"
               >{{ sport }}</DropdownMenuItem
             >
-          </DropdownMenuContent> </DropdownMenu
-        >&nbsp;
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -577,6 +577,7 @@ export default {
         const response = await axios.delete(
           `https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${id}`
         )
+        console.log('Deleted bet:', response.data)
         this.allBets = this.allBets.filter((bet) => bet._id !== id)
         this.cardCarousel = this.allBets
           .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
