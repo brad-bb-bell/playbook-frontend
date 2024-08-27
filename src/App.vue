@@ -59,8 +59,8 @@
               @click="handleResultClick(result)"
               >{{ result }}</DropdownMenuItem
             >
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenuContent> </DropdownMenu
+        >&nbsp;
         <DropdownMenu>
           <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -70,8 +70,8 @@
               @click="handleSportClick(sport)"
               >{{ sport }}</DropdownMenuItem
             >
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenuContent> </DropdownMenu
+        >&nbsp;
         <DropdownMenu>
           <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -82,7 +82,7 @@
               >{{ season }}</DropdownMenuItem
             >
           </DropdownMenuContent> </DropdownMenu
-        >&nbsp;Bets
+        >&nbsp;&nbsp;Bets
       </h2>
       <div class="mx-auto flex w-4/5 max-w-[800px]">
         <Carousel class="w-full" :opts="{ align: 'start', loop: 'true' }">
