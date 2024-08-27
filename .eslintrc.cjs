@@ -10,36 +10,39 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:vue/vue3-essential',
     'plugin:vuejs-accessibility/recommended',
-    '@vue/eslint-config-prettier/skip-formatting'
+    '@vue/eslint-config-prettier/skip-formatting',
   ],
   plugins: ['vue', 'prettier', 'vuejs-accessibility'],
   parserOptions: {
-    ecmaVersion: 'latest'
+    ecmaVersion: 'latest',
   },
   settings: {
     // npm install --save-dev eslint-import-resolver-alias
     'import/resolver': {
       alias: {
         map: [['@', './src']],
-        extensions: ['.js', '.vue', '.json']
-      }
-    }
+        extensions: ['.js', '.vue', '.json'],
+      },
+    },
   },
   rules: {
+    'no-console': 'off',
+    'no-underscore-dangle': ['error', { allow: ['_id'] }],
     'vuejs-accessibility/label-has-for': 'off',
+    'vue/no-reserved-component-names': 'off',
     'import/extensions': [
       'error',
       'always',
       {
         js: 'never',
-        vue: 'always'
-      }
+        vue: 'always',
+      },
     ],
     'import/no-extraneous-dependencies': [
       'error',
       {
-        devDependencies: ['**/.eslintrc.{js,cjs}', '**/.eslintrc.js', 'vite.config.js']
-      }
-    ]
-  }
+        devDependencies: ['**/.eslintrc.{js,cjs}', '**/.eslintrc.js', 'vite.config.js'],
+      },
+    ],
+  },
 }

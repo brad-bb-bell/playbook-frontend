@@ -423,8 +423,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+  // DropdownMenuLabel,
+  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
@@ -445,8 +445,8 @@ export default {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
+    // DropdownMenuLabel,
+    // DropdownMenuSeparator,
     DropdownMenuTrigger,
     Input,
     Textarea,
@@ -598,11 +598,11 @@ export default {
       this.editBet = JSON.parse(JSON.stringify(bet))
 
       // Convert arrays to comma-separated strings
-      for (const key in this.editBet) {
-        if (Array.isArray(this.editBet[key])) {
-          this.editBet[key] = this.editBet[key].join(', ')
+      Object.entries(this.editBet).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          this.editBet[key] = value.join(', ')
         }
-      }
+      })
     },
     handleResultClick(result) {
       this.cardCarousel = this.allBets
@@ -770,15 +770,15 @@ export default {
       bets.forEach((bet) => {
         const weekIndex = bet.week - 1
         if (bet.result === 'win') {
-          weeklyData[weekIndex].wins++
+          weeklyData[weekIndex].wins += 1
           weeklyData[weekIndex].weekWinnings += bet.betPayout
           cumulativeWinnings += bet.betPayout
         } else if (bet.result === 'loss') {
-          weeklyData[weekIndex].losses++
+          weeklyData[weekIndex].losses += 1
           weeklyData[weekIndex].weekWinnings -= bet.betAmount
           cumulativeWinnings -= bet.betAmount
         } else if (bet.result === 'push') {
-          weeklyData[weekIndex].pushes++
+          weeklyData[weekIndex].pushes += 1
         }
         weeklyData[weekIndex].totalWinnings = cumulativeWinnings
       })
