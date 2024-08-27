@@ -545,7 +545,8 @@ export default {
           enabled: false,
         },
         tooltip: {
-          custom({ series, seriesIndex, dataPointIndex, w }) {
+          // removed { series } from the function signature... not sure if i'll need it in the future
+          custom({ seriesIndex, dataPointIndex, w }) {
             const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex]
             return `<div class="custom-tooltip">
               <span class="week-header">Week ${dataPointIndex + 1}</span>
@@ -733,7 +734,6 @@ export default {
       // Filter by season
       filteredBets = filteredBets.filter((bet) => bet.season === Number(this.selectedSeason))
       // Filter by result
-      console.log('i see you', this.filteredBets)
       if (this.selectedBetResult !== 'All') {
         this.cardCarousel = filteredBets
           .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
