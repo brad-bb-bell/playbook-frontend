@@ -575,14 +575,8 @@ export default {
   methods: {
     async deleteBet(id) {
       try {
-        const response = await axios.delete(
-          `https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${id}`
-        )
-        console.log('Deleted bet:', response.data)
+        await axios.delete(`https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${id}`)
         this.allBets = this.allBets.filter((bet) => bet._id !== id)
-        this.cardCarousel = this.allBets
-          .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
         this.filterAndUpdateBets()
         this.closeEditBetModal()
       } catch (error) {
@@ -632,13 +626,10 @@ export default {
           // Update the bet in the allBets array
           this.allBets[betIndex] = response.data.bet
 
-          this.cardCarousel = this.allBets
-            .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
+          this.filterAndUpdateBets()
         } else {
           console.warn('Edited bet not found in allBets array')
         }
-        this.filterAndUpdateBets()
       } catch (error) {
         console.error('Error submitting new bet: ', error)
       }
@@ -660,9 +651,6 @@ export default {
           betToSubmit
         )
         this.allBets.push(response.data.bet)
-        this.cardCarousel = this.allBets
-          .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
         this.filterAndUpdateBets()
       } catch (error) {
         console.error('Error submitting new bet: ', error)
