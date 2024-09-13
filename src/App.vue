@@ -43,6 +43,7 @@
       </Card>
     </section>
 
+    <!-- Chart -->
     <section class="mx-auto w-4/5 max-w-[800px] py-4">
       <apexchart type="line" :options="chartOptions" :series="chartSeries"></apexchart>
     </section>
@@ -757,8 +758,8 @@ export default {
       // Find the maximum week number from the bets
       const maxWeek = Math.max(...bets.map((bet) => bet.week), 0)
 
-      // Use maxWeek as the number of weeks to display
-      const weeks = Array.from({ length: maxWeek }, (_, i) => i + 1)
+      // Create an array of weeks including week 0
+      const weeks = Array.from({ length: maxWeek + 1 }, (_, i) => i)
       let cumulativeWinnings = 0
 
       const weeklyData = weeks.map((week) => ({
@@ -771,7 +772,7 @@ export default {
       }))
 
       bets.forEach((bet) => {
-        const weekIndex = bet.week - 1
+        const weekIndex = bet.week
         if (bet.result === 'win') {
           weeklyData[weekIndex].wins += 1
           weeklyData[weekIndex].weekWinnings += bet.betPayout
@@ -794,7 +795,7 @@ export default {
         totalWinnings: item.totalWinnings,
       }))
 
-      // Update chart options to show only the weeks with data
+      // Update chart options to show all weeks including week 0
       this.chartOptions.xaxis.categories = weeks.map((week) => `Week ${week}`)
     },
     calculateStats(bets) {
