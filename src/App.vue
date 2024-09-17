@@ -560,7 +560,7 @@ export default {
           custom({ seriesIndex, dataPointIndex, w }) {
             const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex]
             return `<div class="custom-tooltip">
-              <span class="week-header">Week ${dataPointIndex + 1}</span>
+              <span class="week-header">Week ${data.weekNumber}</span>
               <span class="week-record">${data.weekRecord}</span>
               <div class="tooltip-row">
                 <span>Week:</span>
@@ -665,14 +665,13 @@ export default {
         console.error('Error submitting new bet: ', error)
       }
     },
-    handleSubmit() {
-      this.submitNewBet()
-      this.closeNewBetModal()
+    resetNewBetForm() {
+      const { week, sport, season, betType } = this.newBet
       this.newBet = {
-        sport: '',
-        season: '',
-        betType: '',
-        week: '',
+        sport: sport || this.modalSelectedSport,
+        season: season || this.modalSelectedSeason,
+        betType: betType || this.modalSelectedBetTypeValue,
+        week: week || null,
         team: '',
         line: '',
         opponent: '',
@@ -682,6 +681,17 @@ export default {
         notes: '',
         result: 'pending',
       }
+      this.modalSelectedResult = 'Pending'
+    },
+    handleSubmit() {
+      this.submitNewBet()
+        .then(() => {
+          this.closeNewBetModal()
+          this.resetNewBetForm()
+        })
+        .catch((error) => {
+          console.error('Error submitting new bet: ', error)
+        })
     },
     handleEditSubmit() {
       this.submitEditBet()
@@ -790,6 +800,7 @@ export default {
       this.chartSeries[0].data = weeklyData.map((item) => ({
         x: `Week ${item.week}`,
         y: item.totalWinnings,
+        weekNumber: item.week,
         weekRecord: `${item.wins}-${item.losses}-${item.pushes}`,
         weekWinnings: item.weekWinnings,
         totalWinnings: item.totalWinnings,
