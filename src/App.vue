@@ -1,4 +1,12 @@
 <template>
+  <!-- Loading Overlay -->
+  <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+    <div class="text-center text-white">
+      <div class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-600 border-t-white"></div>
+      <p class="font-anek-devanagari text-xl">Retrieving Data</p>
+    </div>
+  </div>
+
   <main class="bg-black">
     <h1 class="py-4 text-center font-matemasie text-6xl tracking-wider text-white">Playbook</h1>
 
@@ -477,6 +485,7 @@ export default {
   },
   data() {
     return {
+      isLoading: true,
       allBets: [],
       chartBets: [],
       cardCarousel: [],
@@ -922,6 +931,8 @@ export default {
           .sort((a, b) => new Date(b.date) - new Date(a.date))
       } catch (error) {
         console.error('Error fetching bets:', error)
+      } finally {
+        this.isLoading = false
       }
     },
     login() {
