@@ -840,7 +840,12 @@ export default {
         return acc
       }, {})
       // Create an array of unique seasons, sorted by most recent season first
-      const allSeasons = [...Object.keys(seasonCounts).sort((a, b) => b.localeCompare(a))]
+      // Always include 2025 even if no bets exist yet
+      const seasonsFromBets = Object.keys(seasonCounts)
+      if (!seasonsFromBets.includes('2025')) {
+        seasonsFromBets.push('2025')
+      }
+      const allSeasons = [...seasonsFromBets.sort((a, b) => b.localeCompare(a))]
 
       return {
         wins,
