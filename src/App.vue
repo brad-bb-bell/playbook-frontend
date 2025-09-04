@@ -7,40 +7,53 @@
     </section>
 
     <section class="py-4 text-center font-anek-devanagari text-xl text-white">
-      <Card class="mx-auto w-[222px]">
-        <CardHeader>
-          <CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="sport in allSports"
-                  :key="sport"
-                  @click="handleSportClick(sport)"
-                  >{{ sport }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-            &nbsp;
-            <DropdownMenu>
-              <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  v-for="season in allSeasons"
-                  :key="season"
-                  @click="handleSeasonClick(season)"
-                  >{{ season }}</DropdownMenuItem
-                >
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardTitle>
-          <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
-        </CardHeader>
-        <CardContent>
-          <p>Record: {{ record }}</p>
-          <p :class="{ 'text-red-500': amountTotal < 0 }">Winnings: ${{ amountTotal }}</p>
-        </CardContent>
-      </Card>
+      <div class="mx-auto flex max-w-[500px] justify-center gap-4">
+        <Card class="w-[222px]">
+          <CardHeader>
+            <CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ selectedSport }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="sport in allSports"
+                    :key="sport"
+                    @click="handleSportClick(sport)"
+                    >{{ sport }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+              &nbsp;
+              <DropdownMenu>
+                <DropdownMenuTrigger>{{ selectedSeason }}</DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    v-for="season in allSeasons"
+                    :key="season"
+                    @click="handleSeasonClick(season)"
+                    >{{ season }}</DropdownMenuItem
+                  >
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardTitle>
+            <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
+          </CardHeader>
+          <CardContent>
+            <p>Record: {{ record }}</p>
+            <p :class="{ 'text-red-500': amountTotal < 0 }">Winnings: ${{ amountTotal }}</p>
+          </CardContent>
+        </Card>
+        
+        <Card class="w-[222px]">
+          <CardHeader>
+            <CardTitle>Pending Bets</CardTitle>
+            <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
+          </CardHeader>
+          <CardContent>
+            <p>At Risk: ${{ totalAtRisk }}</p>
+            <p class="text-green-400">Potential: ${{ totalPotentialWinnings }}</p>
+          </CardContent>
+        </Card>
+      </div>
     </section>
 
     <!-- Chart -->
@@ -582,6 +595,18 @@ export default {
         },
       ],
     }
+  },
+  computed: {
+    totalAtRisk() {
+      return this.allBets
+        .filter((bet) => bet.result === 'pending')
+        .reduce((sum, bet) => sum + bet.betAmount, 0)
+    },
+    totalPotentialWinnings() {
+      return this.allBets
+        .filter((bet) => bet.result === 'pending')
+        .reduce((sum, bet) => sum + bet.betPayout, 0)
+    },
   },
   methods: {
     async deleteBet(id) {
