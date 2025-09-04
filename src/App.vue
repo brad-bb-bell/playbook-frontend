@@ -484,7 +484,7 @@ export default {
       modalSelectedSport: '',
       modalSportOptions: ['NFL', 'NBA'],
       modalSelectedSeason: '',
-      modalSeasonOptions: ['2023', '2024'],
+      modalSeasonOptions: ['2023', '2024', '2025'],
       modalSelectedBetType: 'Spread',
       modalSelectedBetTypeValue: 'spread',
       modalSelectedResult: 'Pending',
@@ -876,11 +876,11 @@ export default {
 
         // Set initial selections
         this.selectedSport = this.allSports[0] || 'NFL'
-        this.selectedSeason = this.allSeasons[0] || '2023'
+        this.selectedSeason = this.allSeasons[0] || '2025'
         this.modalSelectedSport = 'NFL'
-        this.modalSelectedSeason = '2024'
+        this.modalSelectedSeason = '2025'
         this.newBet.sport = 'NFL'
-        this.newBet.season = '2024'
+        this.newBet.season = '2025'
         this.newBet.betType = 'spread'
 
         // Prepare initial chart data
