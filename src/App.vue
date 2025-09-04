@@ -58,7 +58,7 @@
           </CardHeader>
           <CardContent>
             <p>At Risk: ${{ totalAtRisk }}</p>
-            <p class="text-green-400">Potential: ${{ totalPotentialWinnings }}</p>
+            <p>Potential: ${{ totalPotentialWinnings }}</p>
           </CardContent>
         </Card>
       </div>
