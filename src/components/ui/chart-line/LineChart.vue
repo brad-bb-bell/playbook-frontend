@@ -1,7 +1,6 @@
 <script setup>
-import { CurveType } from "@unovis/ts";
+import { CurveType , Axis, Line } from "@unovis/ts";
 import { VisAxis, VisLine, VisXYContainer } from "@unovis/vue";
-import { Axis, Line } from "@unovis/ts";
 import { computed, ref } from "vue";
 import { useMounted } from "@vueuse/core";
 import {

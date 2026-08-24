@@ -16,7 +16,7 @@ const wm = new WeakMap();
 function template(d) {
   if (wm.has(d)) {
     return wm.get(d);
-  } else {
+  } 
     const componentDiv = document.createElement("div");
     const omittedData = Object.entries(omit(d, [props.index])).map(
       ([key, value]) => {
@@ -31,7 +31,7 @@ function template(d) {
     }).mount(componentDiv);
     wm.set(d, componentDiv.innerHTML);
     return componentDiv.innerHTML;
-  }
+  
 }
 
 function color(d, i) {

@@ -18,7 +18,7 @@ function template(d, i, elements) {
   if (props.index in d) {
     if (wm.has(d)) {
       return wm.get(d)
-    } else {
+    } 
       const componentDiv = document.createElement('div')
       const omittedData = Object.entries(omit(d, [props.index])).map(([key, value]) => {
         const legendReference = props.items?.find((i) => i.name === key)
@@ -28,13 +28,13 @@ function template(d, i, elements) {
       createApp(TooltipComponent, { title: d[props.index], data: omittedData }).mount(componentDiv)
       wm.set(d, componentDiv.innerHTML)
       return componentDiv.innerHTML
-    }
-  } else {
-    const data = d.data
+    
+  } 
+    const {data} = d
 
     if (wm.has(data)) {
       return wm.get(data)
-    } else {
+    } 
       const style = getComputedStyle(elements[i])
       const omittedData = [
         { name: data.name, value: props.valueFormatter(data[props.index]), color: style.fill }
@@ -44,8 +44,8 @@ function template(d, i, elements) {
       createApp(TooltipComponent, { title: d[props.index], data: omittedData }).mount(componentDiv)
       wm.set(d, componentDiv.innerHTML)
       return componentDiv.innerHTML
-    }
-  }
+    
+  
 }
 </script>
 
