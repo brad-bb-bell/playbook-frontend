@@ -607,13 +607,19 @@ import {
 const API_BASE =
   import.meta.env.VITE_API_BASE || 'https://playbook-api-399674c1bec2.herokuapp.com/api/v1'
 
-const CURRENT_SEASON = String(new Date().getFullYear())
+// NFL seasons run into the next calendar year — January/February playoff
+// bets still belong to the prior season
+const now = new Date()
+const CURRENT_SEASON = String(now.getMonth() < 2 ? now.getFullYear() - 1 : now.getFullYear())
 const SEASON_OPTIONS = []
 for (let year = 2023; year <= Number(CURRENT_SEASON); year += 1) {
   SEASON_OPTIONS.push(String(year))
 }
 
 const MULTI_LEG_BET_TYPES = ['parlay', '2-team-teaser', '3-team-teaser']
+// Historical conventions the backend also allows: '' (futures),
+// 'XXX' (opponent not tracked), 'BYE' (playoff-bye teaser legs)
+const OPPONENT_PLACEHOLDERS = ['', 'xxx', 'bye']
 
 const emptyLeg = () => ({ team: '', opponent: '', line: '' })
 
@@ -844,7 +850,7 @@ export default {
       })
       betToSubmit.opponent = legs.map((leg) => {
         const raw = (leg.opponent || '').trim()
-        if (!raw || !validateTeams) return raw
+        if (!validateTeams || OPPONENT_PLACEHOLDERS.includes(raw.toLowerCase())) return raw
         const abbr = normalizeNflTeam(raw)
         if (!abbr) invalid.push(raw)
         return abbr || raw
@@ -918,12 +924,18 @@ export default {
     isMultiLegType(betType) {
       return MULTI_LEG_BET_TYPES.includes(betType)
     },
-    // Teasers get exactly 2/3 legs, parlays at least 2, everything else 1
+    // Teasers get exactly 2/3 legs, parlays at least 2, everything else 1.
+    // Fields the new type doesn't render are cleared so hidden values can't
+    // ride along into the payload.
     resizeLegs(legs, betType) {
       const teaserCounts = { '2-team-teaser': 2, '3-team-teaser': 3 }
       const target =
         betType === 'parlay' ? Math.max(legs.length, 2) : teaserCounts[betType] || 1
-      const resized = legs.slice(0, target)
+      const resized = legs.slice(0, target).map((leg) => ({
+        team: leg.team,
+        opponent: betType === 'future' ? '' : leg.opponent,
+        line: betType === 'moneyline' || betType === 'future' ? '' : leg.line,
+      }))
       while (resized.length < target) {
         resized.push(emptyLeg())
       }
@@ -1054,11 +1066,12 @@ export default {
         parsed.line?.length || 0,
       )
       if (legCount > 0) {
-        this.newBet.legs = Array.from({ length: legCount }, (_, index) => ({
+        const parsedLegs = Array.from({ length: legCount }, (_, index) => ({
           team: parsed.team?.[index] || '',
           opponent: parsed.opponent?.[index] || '',
           line: parsed.line?.[index] || '',
         }))
+        this.newBet.legs = this.resizeLegs(parsedLegs, this.modalSelectedBetTypeValue)
       }
 
       if (parsed.odds) this.newBet.odds = parsed.odds
@@ -1199,11 +1212,13 @@ export default {
         const initialStats = this.calculateStats(
           this.allBets.filter((bet) => bet.result !== 'pending')
         )
+        // Dropdown lists must cover every bet, including pending ones
+        const allBetStats = this.calculateStats(this.allBets)
 
         // Update component data with initial stats
         this.record = initialStats.record
-        this.allSports = initialStats.allSports
-        this.allSeasons = initialStats.allSeasons
+        this.allSports = allBetStats.allSports
+        this.allSeasons = allBetStats.allSeasons
         this.amountWon = initialStats.amountWon
         this.amountLost = initialStats.amountLost
         this.amountTotal = initialStats.amountTotal
