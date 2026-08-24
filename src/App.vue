@@ -76,7 +76,7 @@
           <DropdownMenuTrigger>{{ selectedBetResult }}</DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
-              v-for="result in resultOptions"
+              v-for="result in resultFilterOptions"
               :key="result"
               @click="handleResultClick(result)"
               >{{ result }}</DropdownMenuItem
@@ -128,18 +128,15 @@
                   <CardDescription>Week {{ bet.week }}</CardDescription>
                 </CardHeader>
                 <CardContent class="flex-grow">
-                  <div v-if="['2-team-teaser', '3-team-teaser', 'parlay'].includes(bet.betType)">
+                  <div v-if="isMultiLegType(bet.betType)">
                     <div v-for="(team, index) in bet.team" :key="index">
-                      <p>{{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }}</p>
+                      <p>{{ formatLeg(bet, index) }}</p>
                     </div>
                     <p class="mt-2">{{ bet.odds }}</p>
                   </div>
                   <div v-else>
                     <div v-for="(team, index) in bet.team" :key="index">
-                      <p>
-                        {{ team }} {{ bet.line[index] }} vs. {{ bet.opponent[index] }}
-                        {{ bet.odds }}
-                      </p>
+                      <p>{{ formatLeg(bet, index) }} {{ bet.odds }}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -162,6 +159,27 @@
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
+      </div>
+    </section>
+
+    <!-- Stats by Bet Type -->
+    <section
+      v-if="statsByType.length"
+      class="py-4 text-center font-anek-devanagari text-xl text-white"
+    >
+      <h2 class="text-center font-anek-devanagari text-2xl text-white">By Bet Type</h2>
+      <div class="mx-auto mt-4 grid w-4/5 max-w-[800px] grid-cols-2 gap-4 md:grid-cols-3">
+        <Card v-for="stats in statsByType" :key="stats.betType">
+          <CardHeader>
+            <CardTitle>{{ stats.label }}</CardTitle>
+            <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
+          </CardHeader>
+          <CardContent>
+            <p>Record: {{ stats.record }}</p>
+            <p :class="{ 'text-red-500': stats.net < 0 }">Net: ${{ stats.net }}</p>
+            <p v-if="stats.pending" class="text-sm text-gray-400">{{ stats.pending }} pending</p>
+          </CardContent>
+        </Card>
       </div>
     </section>
   </main>
@@ -208,13 +226,13 @@
               </DropdownMenu>
               <br />
               <DropdownMenu>
-                <DropdownMenuTrigger>{{ editBet.betType }}</DropdownMenuTrigger>
+                <DropdownMenuTrigger>{{ getBetTypeLabel(editBet.betType) }}</DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    v-for="betType in betTypeLabels"
-                    :key="betType"
-                    @click="this.editBet.betType = betType"
-                    >{{ betType }}</DropdownMenuItem
+                    v-for="(label, key) in betTypeLabels"
+                    :key="key"
+                    @click="handleEditBetTypeClick(key)"
+                    >{{ label }}</DropdownMenuItem
                   >
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -225,23 +243,67 @@
                 <Input id="week" type="number" class="w-2/3" required v-model="editBet.week" />
               </template>
 
-              <label for="team" class="text-left">Team:</label>
-              <Input id="team" type="text" class="w-2/3" required v-model="editBet.team" />
+              <template v-for="(leg, index) in editBet.legs" :key="index">
+                <label :for="`edit-team-${index}`" class="text-left">{{
+                  isMultiLegType(editBet.betType) ? `Team ${index + 1}:` : 'Team:'
+                }}</label>
+                <div class="flex items-center gap-1">
+                  <Input
+                    :id="`edit-team-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    required
+                    :list="
+                      editBet.sport === 'NFL' && editBet.betType !== 'future'
+                        ? 'nfl-teams'
+                        : undefined
+                    "
+                    v-model="leg.team"
+                  />
+                  <button
+                    v-if="editBet.betType === 'parlay' && editBet.legs.length > 2"
+                    type="button"
+                    aria-label="Remove leg"
+                    class="px-1 text-gray-400 hover:text-red-500"
+                    @click="removeParlayLeg(editBet, index)"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <template v-if="editBet.betType !== 'future'">
-                <label for="opponent" class="text-left">Opponent:</label>
-                <Input
-                  id="opponent"
-                  type="text"
-                  class="w-2/3"
-                  required
-                  v-model="editBet.opponent"
-                />
+                <template v-if="editBet.betType !== 'future'">
+                  <label :for="`edit-opponent-${index}`" class="text-left">Opponent:</label>
+                  <Input
+                    :id="`edit-opponent-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    :list="editBet.sport === 'NFL' ? 'nfl-teams' : undefined"
+                    v-model="leg.opponent"
+                  />
+                </template>
+
+                <template v-if="editBet.betType !== 'moneyline' && editBet.betType !== 'future'">
+                  <label :for="`edit-line-${index}`" class="text-left">Line:</label>
+                  <Input
+                    :id="`edit-line-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    :required="editBet.betType !== 'parlay'"
+                    v-model="leg.line"
+                  />
+                </template>
               </template>
 
-              <template v-if="editBet.betType !== 'moneyline' && editBet.betType !== 'future'">
-                <label for="line" class="text-left">Line:</label>
-                <Input id="line" type="text" class="w-2/3" required v-model="editBet.line" />
+              <template v-if="editBet.betType === 'parlay'">
+                <span></span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  class="w-2/3"
+                  @click="addParlayLeg(editBet)"
+                  >+ Add Leg</Button
+                >
               </template>
 
               <label for="betAmount" class="text-left">Bet Amount:</label>
@@ -276,7 +338,7 @@
                 <DropdownMenuTrigger>{{ editBet.result }}</DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    v-for="result in resultOptions"
+                    v-for="result in resultFormOptions"
                     :key="result"
                     @click="this.editBet.result = result.toLowerCase()"
                     >{{ result }}</DropdownMenuItem
@@ -284,6 +346,9 @@
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            <p v-if="editBetError" class="mt-2 text-center text-sm text-red-500">
+              {{ editBetError }}
+            </p>
           </CardContent>
           <CardFooter class="grid grid-cols-3 gap-2">
             <Button
@@ -308,7 +373,7 @@
     <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <button
         class="absolute inset-0 h-full w-full bg-black bg-opacity-90 p-0 focus:outline-none"
-        @click="closeEditBetModal"
+        @click="closeNewBetModal"
         aria-label="Close modal"
       >
         <div class="h-full w-full"></div>
@@ -317,6 +382,25 @@
         <form @submit.prevent="handleSubmit">
           <CardHeader>
             <CardTitle class="text-center">Enter New Bet</CardTitle>
+            <div class="text-center">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                :disabled="isParsingTicket"
+                @click="$refs.ticketInput.click()"
+                >{{ isParsingTicket ? 'Reading ticket…' : 'Upload Ticket' }}</Button
+              >
+              <input
+                ref="ticketInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                aria-label="Upload ticket screenshot"
+                @change="handleTicketUpload"
+              />
+              <p v-if="parseError" class="mt-1 text-sm text-red-500">{{ parseError }}</p>
+            </div>
           </CardHeader>
           <CardContent>
             <div class="mb-2 text-center">
@@ -362,22 +446,72 @@
                 <Input id="week" type="number" class="w-2/3" required v-model="newBet.week" />
               </template>
 
-              <label for="team" class="text-left">Team:</label>
-              <Input id="team" type="text" class="w-2/3" required v-model="newBet.team" />
+              <template v-for="(leg, index) in newBet.legs" :key="index">
+                <label :for="`new-team-${index}`" class="text-left">{{
+                  isMultiLegType(modalSelectedBetTypeValue) ? `Team ${index + 1}:` : 'Team:'
+                }}</label>
+                <div class="flex items-center gap-1">
+                  <Input
+                    :id="`new-team-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    required
+                    :list="
+                      newBet.sport === 'NFL' && modalSelectedBetTypeValue !== 'future'
+                        ? 'nfl-teams'
+                        : undefined
+                    "
+                    v-model="leg.team"
+                  />
+                  <button
+                    v-if="modalSelectedBetTypeValue === 'parlay' && newBet.legs.length > 2"
+                    type="button"
+                    aria-label="Remove leg"
+                    class="px-1 text-gray-400 hover:text-red-500"
+                    @click="removeParlayLeg(newBet, index)"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <template v-if="modalSelectedBetTypeValue !== 'future'">
-                <label for="opponent" class="text-left">Opponent:</label>
-                <Input id="opponent" type="text" class="w-2/3" required v-model="newBet.opponent" />
+                <template v-if="modalSelectedBetTypeValue !== 'future'">
+                  <label :for="`new-opponent-${index}`" class="text-left">Opponent:</label>
+                  <Input
+                    :id="`new-opponent-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    :list="newBet.sport === 'NFL' ? 'nfl-teams' : undefined"
+                    v-model="leg.opponent"
+                  />
+                </template>
+
+                <template
+                  v-if="
+                    modalSelectedBetTypeValue !== 'moneyline' &&
+                    modalSelectedBetTypeValue !== 'future'
+                  "
+                >
+                  <label :for="`new-line-${index}`" class="text-left">Line:</label>
+                  <Input
+                    :id="`new-line-${index}`"
+                    type="text"
+                    class="w-2/3"
+                    :required="modalSelectedBetTypeValue !== 'parlay'"
+                    v-model="leg.line"
+                  />
+                </template>
               </template>
 
-              <template
-                v-if="
-                  modalSelectedBetTypeValue !== 'moneyline' &&
-                  modalSelectedBetTypeValue !== 'future'
-                "
-              >
-                <label for="line" class="text-left">Line:</label>
-                <Input id="line" type="text" class="w-2/3" required v-model="newBet.line" />
+              <template v-if="modalSelectedBetTypeValue === 'parlay'">
+                <span></span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  class="w-2/3"
+                  @click="addParlayLeg(newBet)"
+                  >+ Add Leg</Button
+                >
               </template>
 
               <label for="betAmount" class="text-left">Bet Amount:</label>
@@ -412,7 +546,7 @@
                 <DropdownMenuTrigger>{{ modalSelectedResult }}</DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    v-for="result in resultOptions"
+                    v-for="result in resultFormOptions"
                     :key="result"
                     @click="handleModalResultClick(result)"
                     >{{ result }}</DropdownMenuItem
@@ -420,6 +554,9 @@
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            <p v-if="newBetError" class="mt-2 text-center text-sm text-red-500">
+              {{ newBetError }}
+            </p>
           </CardContent>
           <CardFooter class="flex justify-end">
             <Button type="button" variant="secondary" @click="closeNewBetModal">Cancel</Button>
@@ -429,10 +566,17 @@
       </Card>
     </div>
   </transition>
+
+  <!-- Shared team typeahead for the bet form inputs -->
+  <datalist id="nfl-teams">
+    <option v-for="(name, abbr) in nflTeams" :key="abbr" :value="abbr">{{ name }}</option>
+  </datalist>
 </template>
 <script>
 import axios from 'axios'
 
+import { NFL_TEAMS, normalizeNflTeam } from '@/lib/teams'
+import downscaleImage from '@/lib/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -459,6 +603,19 @@ import {
   // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE || 'https://playbook-api-399674c1bec2.herokuapp.com/api/v1'
+
+const CURRENT_SEASON = String(new Date().getFullYear())
+const SEASON_OPTIONS = []
+for (let year = 2023; year <= Number(CURRENT_SEASON); year += 1) {
+  SEASON_OPTIONS.push(String(year))
+}
+
+const MULTI_LEG_BET_TYPES = ['parlay', '2-team-teaser', '3-team-teaser']
+
+const emptyLeg = () => ({ team: '', opponent: '', line: '' })
 
 export default {
   components: {
@@ -506,20 +663,20 @@ export default {
       modalSelectedSport: '',
       modalSportOptions: ['NFL', 'NBA'],
       modalSelectedSeason: '',
-      modalSeasonOptions: ['2023', '2024', '2025'],
+      modalSeasonOptions: SEASON_OPTIONS,
       modalSelectedBetType: 'Spread',
       modalSelectedBetTypeValue: 'spread',
       modalSelectedResult: 'Pending',
-      resultOptions: ['Pending', 'Win', 'Loss', 'Push', 'All'],
+      resultFilterOptions: ['Pending', 'Win', 'Loss', 'Push', 'All'],
+      resultFormOptions: ['Pending', 'Win', 'Loss', 'Push'],
       selectedBetResult: 'Pending',
+      nflTeams: NFL_TEAMS,
       newBet: {
         sport: '',
         season: '',
         betType: '',
         week: '',
-        team: '',
-        line: '',
-        opponent: '',
+        legs: [emptyLeg()],
         betAmount: '',
         odds: '',
         betPayout: '',
@@ -529,6 +686,11 @@ export default {
       editBet: {},
       showNewBetModal: false,
       showEditBetModal: false,
+      statsByType: [],
+      isParsingTicket: false,
+      parseError: '',
+      newBetError: '',
+      editBetError: '',
       amountWon: 0,
       amountLost: 0,
       amountTotal: 0,
@@ -620,7 +782,7 @@ export default {
   methods: {
     async deleteBet(id) {
       try {
-        await axios.delete(`https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${id}`)
+        await axios.delete(`${API_BASE}/bets/${id}`)
         this.allBets = this.allBets.filter((bet) => bet._id !== id)
         this.filterAndUpdateBets()
         this.closeEditBetModal()
@@ -633,71 +795,66 @@ export default {
     },
     openEditBetModal(bet) {
       this.showEditBetModal = true
-      this.editBet = { ...bet }
-
-      // Convert arrays to comma-separated strings
-      Object.entries(this.editBet).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          this.editBet[key] = value.join(', ')
-        }
-      })
+      this.editBetError = ''
+      this.editBet = { ...bet, legs: this.betToLegs(bet) }
     },
     handleResultClick(result) {
       this.selectedBetResult = result
       this.filterAndUpdateBets()
     },
     async submitEditBet() {
-      try {
-        // Create a copy of the newBet object
-        const betToSubmit = { ...this.editBet }
+      const betToSubmit = this.prepareBetForSubmit(this.editBet)
 
-        // Convert team, opponent, and line to arrays if they contain commas
-        ;['team', 'opponent', 'line'].forEach((field) => {
-          if (typeof betToSubmit[field] === 'string' && betToSubmit[field].includes(',')) {
-            betToSubmit[field] = betToSubmit[field].split(',').map((item) => item.trim())
-          }
-        })
+      const response = await axios.patch(`${API_BASE}/bets/${this.editBet._id}`, betToSubmit)
+      // Find the index of the bet to update in allBets
+      const betIndex = this.allBets.findIndex((bet) => bet._id === this.editBet._id)
 
-        const response = await axios.patch(
-          `https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/${this.editBet._id}`,
-          betToSubmit
-        )
-        // Find the index of the bet to update in allBets
-        const betIndex = this.allBets.findIndex((bet) => bet._id === this.editBet._id)
+      if (betIndex !== -1) {
+        // Update the bet in the allBets array
+        this.allBets[betIndex] = response.data.bet
 
-        if (betIndex !== -1) {
-          // Update the bet in the allBets array
-          this.allBets[betIndex] = response.data.bet
-
-          this.filterAndUpdateBets()
-        } else {
-          console.warn('Edited bet not found in allBets array')
-        }
-      } catch (error) {
-        console.error('Error submitting new bet: ', error)
+        this.filterAndUpdateBets()
+      } else {
+        console.warn('Edited bet not found in allBets array')
       }
     },
     async submitNewBet() {
-      try {
-        // Create a copy of the newBet object
-        const betToSubmit = { ...this.newBet }
+      const betToSubmit = this.prepareBetForSubmit(this.newBet)
 
-        // Convert team, opponent, and line to arrays if they contain commas
-        ;['team', 'opponent', 'line'].forEach((field) => {
-          if (typeof betToSubmit[field] === 'string' && betToSubmit[field].includes(',')) {
-            betToSubmit[field] = betToSubmit[field].split(',').map((item) => item.trim())
-          }
-        })
+      const response = await axios.post(`${API_BASE}/bets/`, betToSubmit)
+      this.allBets.push(response.data.bet)
+      this.filterAndUpdateBets()
+    },
+    // Turns a form's legs back into the parallel team/opponent/line arrays the
+    // API stores, normalizing NFL entries to canonical abbreviations. Throws
+    // when an entry isn't a recognizable team (futures and NBA stay free text).
+    prepareBetForSubmit(bet) {
+      const betToSubmit = { ...bet }
+      const legs = betToSubmit.legs || []
+      delete betToSubmit.legs
+      const validateTeams = betToSubmit.sport === 'NFL' && betToSubmit.betType !== 'future'
+      const invalid = []
 
-        const response = await axios.post(
-          'https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/',
-          betToSubmit
-        )
-        this.allBets.push(response.data.bet)
-        this.filterAndUpdateBets()
-      } catch (error) {
-        console.error('Error submitting new bet: ', error)
+      betToSubmit.team = legs.map((leg) => {
+        const raw = (leg.team || '').trim()
+        if (!validateTeams) return raw
+        const abbr = normalizeNflTeam(raw)
+        if (!abbr) invalid.push(raw || '(blank team)')
+        return abbr || raw
+      })
+      betToSubmit.opponent = legs.map((leg) => {
+        const raw = (leg.opponent || '').trim()
+        if (!raw || !validateTeams) return raw
+        const abbr = normalizeNflTeam(raw)
+        if (!abbr) invalid.push(raw)
+        return abbr || raw
+      })
+      betToSubmit.line = legs.map((leg) => String(leg.line ?? '').trim())
+
+      if (invalid.length) {
+        throw new Error(`Not an NFL team: ${invalid.join(', ')}`)
       }
+      return betToSubmit
     },
     resetNewBetForm() {
       const { week, sport, season, betType } = this.newBet
@@ -706,9 +863,7 @@ export default {
         season: season || this.modalSelectedSeason,
         betType: betType || this.modalSelectedBetTypeValue,
         week: week || null,
-        team: '',
-        line: '',
-        opponent: '',
+        legs: this.resizeLegs([], betType || this.modalSelectedBetTypeValue),
         betAmount: '',
         odds: '',
         betPayout: '',
@@ -716,8 +871,11 @@ export default {
         result: 'pending',
       }
       this.modalSelectedResult = 'Pending'
+      this.newBetError = ''
+      this.parseError = ''
     },
     handleSubmit() {
+      this.newBetError = ''
       this.submitNewBet()
         .then(() => {
           this.closeNewBetModal()
@@ -725,11 +883,19 @@ export default {
         })
         .catch((error) => {
           console.error('Error submitting new bet: ', error)
+          this.newBetError = error.response?.data?.msg || error.message
         })
     },
     handleEditSubmit() {
+      this.editBetError = ''
       this.submitEditBet()
-      this.closeEditBetModal()
+        .then(() => {
+          this.closeEditBetModal()
+        })
+        .catch((error) => {
+          console.error('Error updating bet: ', error)
+          this.editBetError = error.response?.data?.msg || error.message
+        })
     },
     handleModalResultClick(result) {
       this.modalSelectedResult = result
@@ -741,8 +907,56 @@ export default {
           this.modalSelectedBetTypeValue = key
           this.modalSelectedBetType = type
           this.newBet.betType = key
+          this.newBet.legs = this.resizeLegs(this.newBet.legs, key)
         }
       })
+    },
+    handleEditBetTypeClick(key) {
+      this.editBet.betType = key
+      this.editBet.legs = this.resizeLegs(this.editBet.legs, key)
+    },
+    isMultiLegType(betType) {
+      return MULTI_LEG_BET_TYPES.includes(betType)
+    },
+    // Teasers get exactly 2/3 legs, parlays at least 2, everything else 1
+    resizeLegs(legs, betType) {
+      const teaserCounts = { '2-team-teaser': 2, '3-team-teaser': 3 }
+      const target =
+        betType === 'parlay' ? Math.max(legs.length, 2) : teaserCounts[betType] || 1
+      const resized = legs.slice(0, target)
+      while (resized.length < target) {
+        resized.push(emptyLeg())
+      }
+      return resized
+    },
+    addParlayLeg(bet) {
+      bet.legs.push(emptyLeg())
+    },
+    removeParlayLeg(bet, index) {
+      if (bet.legs.length > 2) {
+        bet.legs.splice(index, 1)
+      }
+    },
+    // Stored parallel arrays -> one editable row per leg
+    betToLegs(bet) {
+      const teams = Array.isArray(bet.team) ? bet.team : [bet.team]
+      const opponents = Array.isArray(bet.opponent) ? bet.opponent : [bet.opponent]
+      const lines = Array.isArray(bet.line) ? bet.line : [bet.line]
+      const count = Math.max(teams.length, opponents.length, lines.length, 1)
+      return Array.from({ length: count }, (_, index) => ({
+        team: teams[index] || '',
+        opponent: opponents[index] || '',
+        line: lines[index] || '',
+      }))
+    },
+    formatLeg(bet, index) {
+      const opponent = bet.opponent?.[index]
+      const parts = [bet.team[index], bet.line?.[index]]
+      // '' and XXX are the no-opponent conventions (futures, untracked parlay legs)
+      if (opponent && opponent !== 'XXX') {
+        parts.push('vs.', opponent)
+      }
+      return parts.filter(Boolean).join(' ')
     },
     handleModalSportClick(sport) {
       this.modalSelectedSport = sport
@@ -754,6 +968,8 @@ export default {
     },
     openNewBetModal() {
       this.showNewBetModal = true
+      this.newBetError = ''
+      this.parseError = ''
       document.body.style.overflow = 'hidden' // Prevent scrolling
     },
     closeNewBetModal() {
@@ -774,13 +990,18 @@ export default {
       filteredBets = filteredBets.filter((bet) => bet.sport === this.selectedSport)
       // Filter by season
       filteredBets = filteredBets.filter((bet) => bet.season === Number(this.selectedSeason))
+      // By-type stats ignore the result filter — records need every result
+      this.statsByType = this.calculateStatsByType(filteredBets)
+
       // Filter by result
       if (this.selectedBetResult !== 'All') {
         this.cardCarousel = filteredBets
           .filter((bet) => bet.result === this.selectedBetResult.toLowerCase())
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .sort((a, b) => new Date(b.datePlaced) - new Date(a.datePlaced))
       } else {
-        this.cardCarousel = filteredBets.sort((a, b) => new Date(b.date) - new Date(a.date))
+        this.cardCarousel = filteredBets.sort(
+          (a, b) => new Date(b.datePlaced) - new Date(a.datePlaced)
+        )
       }
 
       // Calculate stats for filtered bets
@@ -797,6 +1018,82 @@ export default {
     },
     getBetTypeLabel(betType) {
       return this.betTypeLabels[betType] || betType
+    },
+    async handleTicketUpload(event) {
+      const input = event.target
+      const file = input.files[0]
+      input.value = '' // allow re-selecting the same file
+      if (!file) return
+      this.isParsingTicket = true
+      this.parseError = ''
+      try {
+        const blob = await downscaleImage(file)
+        const formData = new FormData()
+        formData.append('image', blob, 'ticket.jpg')
+        const response = await axios.post(`${API_BASE}/bets/parse-ticket`, formData)
+        this.applyParsedBet(response.data.parsed)
+      } catch (error) {
+        console.error('Error parsing ticket: ', error)
+        this.parseError =
+          error.response?.data?.msg || 'Could not read the ticket, fill the bet in manually'
+      } finally {
+        this.isParsingTicket = false
+      }
+    },
+    // Pre-fills the New Bet form from parsed ticket fields. The form is the
+    // confirmation step — nothing is saved until Save Bet.
+    applyParsedBet(parsed) {
+      if (parsed.sport) this.handleModalSportClick(parsed.sport)
+      if (parsed.season) this.handleModalSeasonClick(String(parsed.season))
+      if (parsed.betType) this.handleModalBetTypeClick(this.getBetTypeLabel(parsed.betType))
+      if (parsed.week != null) this.newBet.week = parsed.week
+
+      const legCount = Math.max(
+        parsed.team?.length || 0,
+        parsed.opponent?.length || 0,
+        parsed.line?.length || 0,
+      )
+      if (legCount > 0) {
+        this.newBet.legs = Array.from({ length: legCount }, (_, index) => ({
+          team: parsed.team?.[index] || '',
+          opponent: parsed.opponent?.[index] || '',
+          line: parsed.line?.[index] || '',
+        }))
+      }
+
+      if (parsed.odds) this.newBet.odds = parsed.odds
+      if (parsed.betAmount != null) this.newBet.betAmount = parsed.betAmount
+      if (parsed.betPayout != null) this.newBet.betPayout = parsed.betPayout
+      if (parsed.notes) this.newBet.notes = parsed.notes
+    },
+    calculateStatsByType(bets) {
+      const groups = {}
+      bets.forEach((bet) => {
+        if (!groups[bet.betType]) {
+          groups[bet.betType] = { wins: 0, losses: 0, pushes: 0, pending: 0, net: 0, total: 0 }
+        }
+        const group = groups[bet.betType]
+        group.total += 1
+        if (bet.result === 'win') {
+          group.wins += 1
+          group.net += bet.betPayout || 0
+        } else if (bet.result === 'loss') {
+          group.losses += 1
+          group.net -= bet.betAmount || 0
+        } else if (bet.result === 'push') {
+          group.pushes += 1
+        } else if (bet.result === 'pending') {
+          group.pending += 1
+        }
+      })
+      return Object.entries(groups)
+        .map(([betType, group]) => ({
+          betType,
+          label: this.getBetTypeLabel(betType),
+          record: `${group.wins}-${group.losses}-${group.pushes}`,
+          ...group,
+        }))
+        .sort((a, b) => b.total - a.total)
     },
     prepareChartData(bets) {
       // Find the maximum week number from the bets
@@ -874,10 +1171,10 @@ export default {
         return acc
       }, {})
       // Create an array of unique seasons, sorted by most recent season first
-      // Always include 2025 even if no bets exist yet
+      // Always include the current season even if no bets exist yet
       const seasonsFromBets = Object.keys(seasonCounts)
-      if (!seasonsFromBets.includes('2025')) {
-        seasonsFromBets.push('2025')
+      if (!seasonsFromBets.includes(CURRENT_SEASON)) {
+        seasonsFromBets.push(CURRENT_SEASON)
       }
       const allSeasons = [...seasonsFromBets.sort((a, b) => b.localeCompare(a))]
 
@@ -895,14 +1192,12 @@ export default {
     },
     async getAllBets() {
       try {
-        const response = await axios.get(
-          'https://playbook-api-399674c1bec2.herokuapp.com/api/v1/bets/'
-        )
+        const response = await axios.get(`${API_BASE}/bets/`)
         this.allBets = response.data.bets
 
         // Calculate initial stats for all bets
         const initialStats = this.calculateStats(
-          this.allBets.filter((bet) => bet.status !== 'pending')
+          this.allBets.filter((bet) => bet.result !== 'pending')
         )
 
         // Update component data with initial stats
@@ -915,11 +1210,11 @@ export default {
 
         // Set initial selections
         this.selectedSport = this.allSports[0] || 'NFL'
-        this.selectedSeason = this.allSeasons[0] || '2025'
+        this.selectedSeason = this.allSeasons[0] || CURRENT_SEASON
         this.modalSelectedSport = 'NFL'
-        this.modalSelectedSeason = '2025'
+        this.modalSelectedSeason = CURRENT_SEASON
         this.newBet.sport = 'NFL'
-        this.newBet.season = '2025'
+        this.newBet.season = CURRENT_SEASON
         this.newBet.betType = 'spread'
 
         // Prepare initial chart data
@@ -928,7 +1223,7 @@ export default {
         // Add pending bets to cardCarousel and sort by most recent
         this.cardCarousel = this.allBets
           .filter((bet) => bet.result === 'pending')
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .sort((a, b) => new Date(b.datePlaced) - new Date(a.datePlaced))
       } catch (error) {
         console.error('Error fetching bets:', error)
       } finally {
@@ -937,7 +1232,7 @@ export default {
     },
     login() {
       axios
-        .post('https://playbook-api-399674c1bec2.herokuapp.com/api/v1/auth/login/', {
+        .post(`${API_BASE}/auth/login/`, {
           email: 'brad.bb.bell@gmail.com',
           password: 'passwordbb',
         })
