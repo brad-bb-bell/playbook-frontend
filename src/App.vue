@@ -375,7 +375,12 @@
 
   <!-- New Bet Modal -->
   <transition name="fade">
-    <div v-if="showNewBetModal" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      v-if="showNewBetModal"
+      class="fixed inset-0 z-50 flex items-center justify-center"
+      @dragover.prevent
+      @drop.prevent
+    >
       <button
         class="absolute inset-0 h-full w-full bg-black bg-opacity-90 p-0 focus:outline-none"
         @click="closeNewBetModal"
@@ -392,8 +397,14 @@
                 type="button"
                 variant="secondary"
                 size="sm"
+                class="px-4 outline-dashed outline-1 outline-offset-[-4px] outline-zinc-500/70"
+                :class="{ 'ring-2 ring-primary ring-offset-2': isDraggingTicket }"
                 :disabled="isParsingTicket"
                 @click="$refs.ticketInput.click()"
+                @dragenter.prevent="isDraggingTicket = true"
+                @dragover.prevent="isDraggingTicket = true"
+                @dragleave.prevent="isDraggingTicket = false"
+                @drop.prevent="handleTicketDrop"
                 >{{ isParsingTicket ? 'Reading ticket…' : 'Upload Ticket' }}</Button
               >
               <input
@@ -700,6 +711,7 @@ export default {
       showEditBetModal: false,
       statsByType: [],
       isParsingTicket: false,
+      isDraggingTicket: false,
       parseError: '',
       newBetError: '',
       editBetError: '',
@@ -1041,10 +1053,23 @@ export default {
     getBetTypeLabel(betType) {
       return this.betTypeLabels[betType] || betType
     },
-    async handleTicketUpload(event) {
+    handleTicketUpload(event) {
       const input = event.target
       const file = input.files[0]
       input.value = '' // allow re-selecting the same file
+      this.parseTicketFile(file)
+    },
+    handleTicketDrop(event) {
+      this.isDraggingTicket = false
+      if (this.isParsingTicket) return
+      const file = [...event.dataTransfer.files].find((f) => f.type.startsWith('image/'))
+      if (!file) {
+        this.parseError = 'Drop an image file of the ticket'
+        return
+      }
+      this.parseTicketFile(file)
+    },
+    async parseTicketFile(file) {
       if (!file) return
       this.isParsingTicket = true
       this.parseError = ''
