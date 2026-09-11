@@ -639,6 +639,11 @@ const MULTI_LEG_BET_TYPES = ['parlay', '2-team-teaser', '3-team-teaser']
 const OPPONENT_PLACEHOLDERS = ['', 'xxx', 'bye']
 
 const emptyLeg = () => ({ team: '', opponent: '', line: '' })
+// Moneyline legs are stored with the line "ML" (parlays like ["ML", "-3.5"]).
+// Tickets print it as "ML -175", "Moneyline", or "to win"; the parser is told
+// to return "ML" but this keeps the stored convention if it drifts.
+const isMoneylineLine = (line) => /^\s*(ML|moneyline|to win)\b/i.test(String(line ?? ''))
+const normalizeLine = (line) => (isMoneylineLine(line) ? 'ML' : String(line ?? '').trim())
 
 export default {
   components: {
@@ -1104,7 +1109,7 @@ export default {
         const parsedLegs = Array.from({ length: legCount }, (_, index) => ({
           team: parsed.team?.[index] || '',
           opponent: parsed.opponent?.[index] || '',
-          line: parsed.line?.[index] || '',
+          line: normalizeLine(parsed.line?.[index]),
         }))
         this.newBet.legs = this.resizeLegs(parsedLegs, this.modalSelectedBetTypeValue)
       }
@@ -1114,13 +1119,26 @@ export default {
       if (parsed.betPayout != null) this.newBet.betPayout = parsed.betPayout
       if (parsed.notes) this.newBet.notes = parsed.notes
     },
+    // Bucket for the by-type stats. Some older bets were saved as "spread" even
+    // though every leg is a moneyline; count those as Moneyline (one leg) or
+    // Parlay (several legs) so they don't skew the Spread record.
+    statsBetType(bet) {
+      const lines = Array.isArray(bet.line) ? bet.line : [bet.line]
+      const teams = Array.isArray(bet.team) ? bet.team : [bet.team]
+      const allMoneyline = lines.length > 0 && lines.every(isMoneylineLine)
+      if (bet.betType === 'spread' && allMoneyline) {
+        return teams.length > 1 ? 'parlay' : 'moneyline'
+      }
+      return bet.betType
+    },
     calculateStatsByType(bets) {
       const groups = {}
       bets.forEach((bet) => {
-        if (!groups[bet.betType]) {
-          groups[bet.betType] = { wins: 0, losses: 0, pushes: 0, pending: 0, net: 0, total: 0 }
+        const betType = this.statsBetType(bet)
+        if (!groups[betType]) {
+          groups[betType] = { wins: 0, losses: 0, pushes: 0, pending: 0, net: 0, total: 0 }
         }
-        const group = groups[bet.betType]
+        const group = groups[betType]
         group.total += 1
         if (bet.result === 'win') {
           group.wins += 1
