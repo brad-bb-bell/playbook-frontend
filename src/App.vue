@@ -1,8 +1,13 @@
 <template>
   <!-- Loading Overlay -->
-  <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+  <div
+    v-if="isLoading"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+  >
     <div class="text-center text-white">
-      <div class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-600 border-t-white"></div>
+      <div
+        class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-600 border-t-white"
+      ></div>
       <p class="font-anek-devanagari text-xl">Retrieving Data</p>
     </div>
   </div>
@@ -50,7 +55,7 @@
             <p :class="{ 'text-red-500': amountTotal < 0 }">Winnings: ${{ amountTotal }}</p>
           </CardContent>
         </Card>
-        
+
         <Card class="w-[222px]">
           <CardHeader>
             <CardTitle>Pending Bets</CardTitle>
@@ -577,6 +582,7 @@ import axios from 'axios'
 
 import { NFL_TEAMS, normalizeNflTeam } from '@/lib/teams'
 import downscaleImage from '@/lib/image'
+import { currentNflWeek } from '@/lib/nflWeeks'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -681,7 +687,7 @@ export default {
         sport: '',
         season: '',
         betType: '',
-        week: '',
+        week: currentNflWeek(CURRENT_SEASON) ?? '',
         legs: [emptyLeg()],
         betAmount: '',
         odds: '',
@@ -864,11 +870,14 @@ export default {
     },
     resetNewBetForm() {
       const { week, sport, season, betType } = this.newBet
+      const nextSeason = season || this.modalSelectedSeason
       this.newBet = {
         sport: sport || this.modalSelectedSport,
-        season: season || this.modalSelectedSeason,
+        season: nextSeason,
         betType: betType || this.modalSelectedBetTypeValue,
-        week: week || null,
+        // Default to the week the calendar says we're in, keeping whatever
+        // was typed last for seasons without a schedule on file
+        week: currentNflWeek(nextSeason) ?? week ?? null,
         legs: this.resizeLegs([], betType || this.modalSelectedBetTypeValue),
         betAmount: '',
         odds: '',
@@ -929,8 +938,7 @@ export default {
     // ride along into the payload.
     resizeLegs(legs, betType) {
       const teaserCounts = { '2-team-teaser': 2, '3-team-teaser': 3 }
-      const target =
-        betType === 'parlay' ? Math.max(legs.length, 2) : teaserCounts[betType] || 1
+      const target = betType === 'parlay' ? Math.max(legs.length, 2) : teaserCounts[betType] || 1
       const resized = legs.slice(0, target).map((leg) => ({
         team: leg.team,
         opponent: betType === 'future' ? '' : leg.opponent,
@@ -977,6 +985,8 @@ export default {
     handleModalSeasonClick(season) {
       this.modalSelectedSeason = season
       this.newBet.season = season
+      const detectedWeek = currentNflWeek(season)
+      if (detectedWeek) this.newBet.week = detectedWeek
     },
     openNewBetModal() {
       this.showNewBetModal = true
@@ -1063,7 +1073,7 @@ export default {
       const legCount = Math.max(
         parsed.team?.length || 0,
         parsed.opponent?.length || 0,
-        parsed.line?.length || 0,
+        parsed.line?.length || 0
       )
       if (legCount > 0) {
         const parsedLegs = Array.from({ length: legCount }, (_, index) => ({
