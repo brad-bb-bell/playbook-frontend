@@ -180,7 +180,7 @@
             <hr class="mx-auto mt-auto w-3/4 border-gray-300" />
           </CardHeader>
           <CardContent>
-            <p>Record: {{ stats.record }}</p>
+            <p>{{ stats.record }}</p>
             <p :class="{ 'text-red-500': stats.net < 0 }">Net: ${{ stats.net }}</p>
             <p v-if="stats.pending" class="text-sm text-gray-400">{{ stats.pending }} pending</p>
           </CardContent>
